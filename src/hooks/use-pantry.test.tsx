@@ -104,9 +104,9 @@ describe('usePantryItems', () => {
 
     const { result } = renderHook(() => usePantryItems(), { wrapper: createWrapper() })
 
-    await waitFor(() => {
-      expect(result.current.data).toEqual([])
-    })
+    // When query is disabled (no user), data is undefined
+    expect(result.current.data).toBeUndefined()
+    expect(result.current.isLoading).toBe(false)
   })
 
   it('should handle fetch error', async () => {
@@ -139,13 +139,13 @@ describe('useAddPantryItem', () => {
       location: 'Pantry',
     }
 
-    const insertMock = vi.fn().mockResolvedValue({ data: null, error: null })
-    mockFrom.mockReturnValue({
-      insert: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          single: insertMock,
-        }),
+    const insertMock = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: { ...newItem, id: '1', user_id: 'user123' }, error: null }),
       }),
+    })
+    mockFrom.mockReturnValue({
+      insert: insertMock,
     })
 
     const { result } = renderHook(() => useAddPantryItem(), { wrapper: createWrapper() })

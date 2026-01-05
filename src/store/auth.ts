@@ -87,7 +87,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ loading: true })
       console.log(`🔐 Signing in with ${provider}...`)
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
           redirectTo: `${window.location.origin}/dashboard`,

@@ -102,23 +102,22 @@ describe('useAuthStore', () => {
       error: null,
     })
 
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
-      insert: vi.fn().mockReturnThis(),
-    })
-
     const { result } = renderHook(() => useAuthStore(), { wrapper: createWrapper() })
 
     await result.current.signUp('new@example.com', 'password')
 
+    // signUp only logs the message, doesn't set user - user gets set on auth state change
     await waitFor(() => {
-      expect(result.current.user).toEqual(expect.objectContaining({
-        id: mockUser.id,
-        email: mockUser.email,
-      }))
       expect(result.current.loading).toBe(false)
+    })
+    expect(mockAuth.signUp).toHaveBeenCalledWith({
+      email: 'new@example.com',
+      password: 'password',
+      options: {
+        data: {
+          full_name: undefined,
+        },
+      },
     })
   })
 
