@@ -32,17 +32,19 @@ export function useAddPantryItem() {
     mutationFn: async (item: Omit<PantryItem, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       if (!user) throw new Error('User not authenticated')
 
-      const { data, error } = await supabase
+      const insertData = {
+        ...item,
+        user_id: user.id,
+      }
+
+      const { data, error } = await (supabase as any)
         .from('pantry_items')
-        .insert({
-          ...item,
-          user_id: user.id,
-        })
+        .insert(insertData)
         .select()
         .single()
 
       if (error) throw error
-      return data
+      return data as PantryItem
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pantry-items'] })
@@ -55,15 +57,18 @@ export function useUpdatePantryItem() {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<PantryItem> & { id: string }) => {
-      const { data, error } = await supabase
+      // Remove read-only fields
+      const { created_at, updated_at, ...rest } = updates as any
+
+      const { data, error } = await (supabase as any)
         .from('pantry_items')
-        .update(updates)
+        .update(rest)
         .eq('id', id)
         .select()
         .single()
 
       if (error) throw error
-      return data
+      return data as PantryItem
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pantry-items'] })

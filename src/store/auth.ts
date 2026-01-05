@@ -46,18 +46,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
         
         if (profile) {
-          console.log('✅ Profile loaded:', profile.email)
-          set({ user: profile, loading: false })
+          console.log('✅ Profile loaded:', (profile as User).email)
+          set({ user: profile as User, loading: false })
         } else {
-          console.log('⚠️  No profile found, creating basic user object')
-          // Profile might not exist yet, use basic user data
+          console.log('⚠️  No profile found, creating one in database')
+          // Profile doesn't exist, create it in the database
           const basicUser: User = {
             id: data.user.id,
             email: data.user.email!,
             full_name: data.user.user_metadata?.full_name || null,
             avatar_url: null,
           }
-          console.log('✅ Using basic user:', basicUser.email)
+          
+          const { error: insertError } = await (supabase as any)
+            .from('profiles')
+            .insert(basicUser)
+          
+          if (insertError) {
+            console.error('❌ Failed to create profile:', insertError)
+            throw new Error('Failed to create user profile')
+          }
+          
+          console.log('✅ Profile created:', basicUser.email)
           set({ user: basicUser, loading: false })
         }
       }
@@ -137,16 +147,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         
         if (profile) {
           console.log('✅ Profile set from state change')
-          set({ user: profile, loading: false })
+          set({ user: profile as User, loading: false })
         } else {
-          console.log('⚠️  Using basic user from state change')
-          // Use basic user data if profile doesn't exist
+          console.log('⚠️  Creating profile from state change')
+          // Profile doesn't exist, create it in the database
           const basicUser: User = {
             id: session.user.id,
             email: session.user.email!,
             full_name: session.user.user_metadata?.full_name || null,
             avatar_url: null,
           }
+          
+          const { error: insertError } = await (supabase as any)
+            .from('profiles')
+            .insert(basicUser)
+          
+          if (insertError) {
+            console.error('❌ Failed to create profile in state change:', insertError)
+          }
+          
           set({ user: basicUser, loading: false })
         }
       } else if (event === 'SIGNED_OUT') {
@@ -181,16 +200,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           
           if (profile) {
             console.log('✅ Profile loaded on init')
-            set({ user: profile, loading: false })
+            set({ user: profile as User, loading: false })
           } else {
-            console.log('⚠️  No profile, using basic user on init')
-            // Use basic user data if profile doesn't exist
+            console.log('⚠️  No profile, creating one on init')
+            // Profile doesn't exist, create it in the database
             const basicUser: User = {
               id: session.user.id,
               email: session.user.email!,
               full_name: session.user.user_metadata?.full_name || null,
               avatar_url: null,
             }
+            
+            const { error: insertError } = await (supabase as any)
+              .from('profiles')
+              .insert(basicUser)
+            
+            if (insertError) {
+              console.error('❌ Failed to create profile on init:', insertError)
+            }
+            
             set({ user: basicUser, loading: false })
           }
         } else {
