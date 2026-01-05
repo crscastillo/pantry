@@ -7,6 +7,7 @@ interface AuthState {
   loading: boolean
   initialized: boolean
   signIn: (email: string, password: string) => Promise<void>
+  signInWithProvider: (provider: 'google' | 'facebook') => Promise<void>
   signUp: (email: string, password: string, fullName?: string) => Promise<void>
   signOut: () => Promise<void>
   checkAuth: () => Promise<void>
@@ -81,6 +82,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
   
+  signInWithProvider: async (provider: 'google' | 'facebook') => {
+    try {
+      set({ loading: true })
+      console.log(`🔐 Signing in with ${provider}...`)
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      })
+      
+      if (error) {
+        console.error(`❌ ${provider} sign in error:`, error)
+        throw error
+      }
+      
+      // OAuth will redirect, so we don't need to do anything else here
+      console.log(`✅ Redirecting to ${provider} login...`)
+    } catch (error) {
+      console.error(`❌ ${provider} SignIn exception:`, error)
+      set({ loading: false })
+      throw error
+    }
+  },
+
   signUp: async (email: string, password: string, fullName?: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,

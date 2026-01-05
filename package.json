@@ -14,7 +14,8 @@
     "migrations": "node scripts/migrations.js",
     "migrations:help": "node scripts/migrations.js --help",
     "migrate:up": "node scripts/migrate.js",
-    "migrate:exec": "node scripts/migrate-exec.js"
+    "migrate:exec": "node scripts/migrate-exec.js",
+    "setup:oauth": "node scripts/setup-oauth.js"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.0.5",
