@@ -137,11 +137,17 @@ describe('useAddPantryItem', () => {
       unit: 'pieces',
       category: 'other' as const,
       location: 'Pantry',
+      expiry_date: '',
+      purchase_date: '',
+      notes: '',
     }
 
     const insertMock = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
-        single: vi.fn().mockResolvedValue({ data: { ...newItem, id: '1', user_id: 'user123' }, error: null }),
+        single: vi.fn().mockResolvedValue({ 
+          data: { ...newItem, id: '1', user_id: 'user123', location: 'Pantry' }, 
+          error: null 
+        }),
       }),
     })
     mockFrom.mockReturnValue({
@@ -152,11 +158,19 @@ describe('useAddPantryItem', () => {
 
     await result.current.mutateAsync(newItem)
 
+    // Should be called with array and convert empty strings to null
     expect(insertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        ...newItem,
+      [expect.objectContaining({
+        name: 'New Item',
+        quantity: 5,
+        unit: 'pieces',
+        category: 'other',
+        location: 'Pantry',
         user_id: 'user123',
-      })
+        expiry_date: null,
+        purchase_date: null,
+        notes: null,
+      })]
     )
   })
 
@@ -165,7 +179,24 @@ describe('useAddPantryItem', () => {
 
     const { result } = renderHook(() => useAddPantryItem(), { wrapper: createWrapper() })
 
-    await expect(result.current.mutateAsync({ name: 'Test' } as any)).rejects.toThrow()
+    await expect(result.current.mutateAsync({ name: 'Test' } as any)).rejects.toThrow('User not authenticated')
+  })
+
+  it('should throw error when insert returns no data', async () => {
+    mockUseAuthStore.mockReturnValue({ user: { id: 'user123' } })
+
+    const insertMock = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      }),
+    })
+    mockFrom.mockReturnValue({
+      insert: insertMock,
+    })
+
+    const { result } = renderHook(() => useAddPantryItem(), { wrapper: createWrapper() })
+
+    await expect(result.current.mutateAsync({ name: 'Test' } as any)).rejects.toThrow('No data returned from insert')
   })
 })
 
@@ -175,11 +206,18 @@ describe('useUpdatePantryItem', () => {
   })
 
   it('should update pantry item successfully', async () => {
-    const updates = { name: 'Updated Name', quantity: 10 }
+    const updates = { 
+      name: 'Updated Name', 
+      quantity: 10,
+      location: '',
+      notes: 'Some notes',
+    }
     const itemId = '123'
 
-    const updateMock = vi.fn().mockReturnThis()
-    const singleMock = vi.fn().mockResolvedValue({ data: null, error: null })
+    const singleMock = vi.fn().mockResolvedValue({ 
+      data: { id: itemId, ...updates, location: null }, 
+      error: null 
+    })
 
     mockFrom.mockReturnValue({
       update: vi.fn().mockReturnValue({
@@ -191,9 +229,9 @@ describe('useUpdatePantryItem', () => {
       }),
     })
 
-    const { result} = renderHook(() => useUpdatePantryItem(), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useUpdatePantryItem(), { wrapper: createWrapper() })
 
-    await result.current.mutateAsync({ id: itemId, updates })
+    await result.current.mutateAsync({ id: itemId, ...updates })
 
     await waitFor(() => {
       expect(singleMock).toHaveBeenCalled()
@@ -201,16 +239,49 @@ describe('useUpdatePantryItem', () => {
   })
 
   it('should handle update error', async () => {
+    const singleMock = vi.fn().mockResolvedValue({ 
+      data: null, 
+      error: { message: 'Update failed' } 
+    })
+
     mockFrom.mockReturnValue({
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'Update failed' } }),
+      update: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: singleMock,
+          }),
+        }),
+      }),
     })
 
     const { result } = renderHook(() => useUpdatePantryItem(), { wrapper: createWrapper() })
 
     await expect(
-      result.current.mutateAsync({ id: '123', updates: { name: 'Test' } })
+      result.current.mutateAsync({ id: '123', name: 'Test' })
     ).rejects.toThrow()
+  })
+
+  it('should throw error when update returns no data', async () => {
+    const singleMock = vi.fn().mockResolvedValue({ 
+      data: null, 
+      error: null 
+    })
+
+    mockFrom.mockReturnValue({
+      update: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: singleMock,
+          }),
+        }),
+      }),
+    })
+
+    const { result } = renderHook(() => useUpdatePantryItem(), { wrapper: createWrapper() })
+
+    await expect(
+      result.current.mutateAsync({ id: '123', name: 'Test' })
+    ).rejects.toThrow('No data returned from update')
   })
 })
 
