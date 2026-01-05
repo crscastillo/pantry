@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { useAddPantryItem, useUpdatePantryItem } from '@/hooks/use-pantry'
+import { Badge } from '@/components/ui/badge'
+import { useAddPantryItem, useUpdatePantryItem, useDeletePantryItem } from '@/hooks/use-pantry'
 import { useToast } from '@/hooks/use-toast'
 import { PantryItem, PantryCategory, PantryUnit } from '@/types'
+import { ArrowLeft, Trash2, ShoppingBag } from 'lucide-react'
 
 interface AddItemDialogProps {
   open: boolean
@@ -49,6 +51,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
     name: '',
     category: 'Other' as PantryCategory,
     quantity: 1,
+    expected_amount: null as number | null,
     unit: 'piece' as PantryUnit,
     expiry_date: '',
     purchase_date: '',
@@ -58,6 +61,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
 
   const addMutation = useAddPantryItem()
   const updateMutation = useUpdatePantryItem()
+  const deleteMutation = useDeletePantryItem()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -66,6 +70,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
         name: editingItem.name,
         category: editingItem.category as PantryCategory,
         quantity: editingItem.quantity,
+        expected_amount: editingItem.expected_amount || null,
         unit: editingItem.unit as PantryUnit,
         expiry_date: editingItem.expiry_date || '',
         purchase_date: editingItem.purchase_date || '',
@@ -77,6 +82,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
         name: '',
         category: 'Other',
         quantity: 1,
+        expected_amount: null,
         unit: 'piece',
         expiry_date: '',
         purchase_date: '',
@@ -94,6 +100,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
         await updateMutation.mutateAsync({
           id: editingItem.id,
           ...formData,
+          expected_amount: formData.expected_amount || null,
           expiry_date: formData.expiry_date || null,
           purchase_date: formData.purchase_date || null,
           location: formData.location || null,
@@ -106,6 +113,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
       } else {
         await addMutation.mutateAsync({
           ...formData,
+          expected_amount: formData.expected_amount || null,
           expiry_date: formData.expiry_date || null,
           purchase_date: formData.purchase_date || null,
           location: formData.location || null,
@@ -127,129 +135,221 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
     }
   }
 
+  const handleDelete = async () => {
+    if (!editingItem) return
+    try {
+      await deleteMutation.mutateAsync(editingItem.id)
+      toast({
+        title: "Item deleted",
+        description: "The item has been removed from your pantry.",
+      })
+      onOpenChange(false)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete item",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const getCategoryEmoji = (category: string) => {
+    const emojiMap: Record<string, string> = {
+      'Fruits & Vegetables': '🥬',
+      'Meat & Seafood': '🥩',
+      'Dairy & Eggs': '🧀',
+      'Bakery & Bread': '🍞',
+      'Pantry Staples': '🌾',
+      'Beverages': '🥤',
+      'Frozen': '🧊',
+      'Snacks': '🍿',
+      'Condiments': '🍯',
+      'Other': '📦'
+    }
+    return emojiMap[category] || '📦'
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{editingItem ? 'Edit Item' : 'Add New Item'}</DialogTitle>
-          <DialogDescription>
-            {editingItem ? 'Update the details of your pantry item' : 'Add a new item to your pantry'}
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Item Name *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData({ ...formData, category: value as PantryCategory })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      <DialogContent className="max-w-2xl h-[100vh] sm:h-[90vh] overflow-y-auto p-0 gap-0">
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b p-4 z-10">
+          <div className="flex items-center justify-between mb-4">
+            <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex gap-2">
+              {editingItem && (
+                <>
+                  <Button variant="ghost" size="icon" onClick={() => toast({ title: "Coming soon!" })}>
+                    <ShoppingBag className="h-5 w-5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={handleDelete}>
+                    <Trash2 className="h-5 w-5 text-red-600" />
+                  </Button>
+                </>
+              )}
             </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity *</Label>
-              <Input
-                id="quantity"
-                type="number"
-                min="0"
-                step="0.1"
-                value={formData.quantity}
-                onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="unit">Unit *</Label>
-              <Select
-                value={formData.unit}
-                onValueChange={(value) => setFormData({ ...formData, unit: value as PantryUnit })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {units.map((unit) => (
-                    <SelectItem key={unit} value={unit}>
-                      {unit}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="purchase_date">Purchase Date</Label>
-              <Input
-                id="purchase_date"
-                type="date"
-                value={formData.purchase_date}
-                onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="expiry_date">Expiry Date</Label>
-              <Input
-                id="expiry_date"
-                type="date"
-                value={formData.expiry_date}
-                onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
+        <form onSubmit={handleSubmit} className="flex-1 p-6 space-y-6">
+          {/* Item Header */}
+          <div>
+            <div className="text-5xl mb-4">{getCategoryEmoji(formData.category)}</div>
             <Input
-              id="location"
-              placeholder="e.g., Fridge, Pantry, Freezer"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Item name"
+              className="text-2xl font-bold border-0 p-0 h-auto focus-visible:ring-0"
+              required
             />
+            <Badge variant="secondary" className="mt-2">
+              {formData.category} {formData.location && `in ${formData.location}`}
+            </Badge>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="Any additional information..."
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
-            />
+          {/* Quick Stats */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500 mb-1">In pantry</div>
+              <div className="font-semibold">
+                {editingItem ? `${Math.floor((new Date().getTime() - new Date(editingItem.created_at).getTime()) / (1000 * 60 * 60 * 24))} days` : 'New'}
+              </div>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500 mb-1">Expiring</div>
+              <div className="font-semibold text-orange-600">
+                {formData.expiry_date ? `in ${Math.floor((new Date(formData.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days` : 'Not set'}
+              </div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500 mb-1">Amount</div>
+              <div className="font-semibold">{formData.quantity} {formData.unit}</div>
+            </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+          {/* Form Fields */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => setFormData({ ...formData, category: value as PantryCategory })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {getCategoryEmoji(cat)} {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  placeholder="Fridge, Freezer..."
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="quantity">Current Amount</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={formData.quantity}
+                  onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="expected_amount">Expected</Label>
+                <Input
+                  id="expected_amount"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={formData.expected_amount || ''}
+                  onChange={(e) => setFormData({ ...formData, expected_amount: e.target.value ? parseFloat(e.target.value) : null })}
+                  placeholder="Optional"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="unit">Unit</Label>
+                <Select
+                  value={formData.unit}
+                  onValueChange={(value) => setFormData({ ...formData, unit: value as PantryUnit })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {units.map((unit) => (
+                      <SelectItem key={unit} value={unit}>
+                        {unit}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="purchase_date">Purchase Date</Label>
+                <Input
+                  id="purchase_date"
+                  type="date"
+                  value={formData.purchase_date}
+                  onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="expiry_date">Expiry Date</Label>
+                <Input
+                  id="expiry_date"
+                  type="date"
+                  value={formData.expiry_date}
+                  onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                placeholder="Any additional information..."
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="sticky bottom-0 bg-white pt-4 pb-safe">
+            <Button 
+              type="submit" 
+              className="w-full bg-emerald-500 hover:bg-emerald-600" 
+              size="lg"
+              disabled={addMutation.isPending || updateMutation.isPending}
+            >
+              {editingItem ? 'Update Item' : 'Add Item'}
             </Button>
-            <Button type="submit" disabled={addMutation.isPending || updateMutation.isPending}>
-              {editingItem ? 'Update' : 'Add'} Item
-            </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

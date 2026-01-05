@@ -4,6 +4,7 @@ export interface PantryItem {
   name: string
   category: string
   quantity: number
+  expected_amount?: number | null
   unit: string
   expiry_date?: string | null
   purchase_date?: string | null

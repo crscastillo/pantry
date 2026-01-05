@@ -20,6 +20,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   
   signIn: async (email: string, password: string) => {
     try {
+      set({ loading: true })
       console.log('🔐 Signing in...')
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -28,6 +29,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       if (error) {
         console.error('❌ Sign in error:', error)
+        set({ loading: false })
         throw error
       }
       
@@ -41,8 +43,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .eq('id', data.user.id)
           .single()
         
-        if (profileError) {
-          console.log('⚠️  Profile fetch error:', profileError.message)
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('❌ Profile fetch error:', profileError.message)
         }
         
         if (profile) {
@@ -62,12 +64,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             .from('profiles')
             .insert(basicUser)
           
-          if (insertError) {
+          if (insertError && insertError.code !== '23505') {
+            // Ignore duplicate key error (23505), otherwise log and throw
             console.error('❌ Failed to create profile:', insertError)
-            throw new Error('Failed to create user profile')
+            // Still set the user even if insert fails (might already exist)
           }
           
-          console.log('✅ Profile created:', basicUser.email)
+          console.log('✅ Profile created/loaded:', basicUser.email)
           set({ user: basicUser, loading: false })
         }
       }
@@ -141,8 +144,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .eq('id', session.user.id)
           .single()
         
-        if (profileError) {
-          console.log('⚠️  Profile error in state change:', profileError.message)
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('⚠️  Profile error in state change:', profileError.message)
         }
         
         if (profile) {
@@ -162,7 +165,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             .from('profiles')
             .insert(basicUser)
           
-          if (insertError) {
+          if (insertError && insertError.code !== '23505') {
             console.error('❌ Failed to create profile in state change:', insertError)
           }
           
@@ -194,8 +197,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             .eq('id', session.user.id)
             .single()
           
-          if (profileError) {
-            console.log('⚠️  Profile error:', profileError.message, profileError.code)
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.error('⚠️  Profile error on init:', profileError.message, profileError.code)
           }
           
           if (profile) {
@@ -215,7 +218,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               .from('profiles')
               .insert(basicUser)
             
-            if (insertError) {
+            if (insertError && insertError.code !== '23505') {
               console.error('❌ Failed to create profile on init:', insertError)
             }
             

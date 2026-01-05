@@ -1,17 +1,24 @@
 import { useState } from 'react'
-import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { PantryItemCard } from '@/components/pantry/pantry-item-card'
 import { AddItemDialog } from '@/components/pantry/add-item-dialog'
+import { MobileNav } from '@/components/layout/mobile-nav'
+import { DesktopSidebar } from '@/components/layout/desktop-sidebar'
 import { usePantryItems, useDeletePantryItem } from '@/hooks/use-pantry'
 import { useToast } from '@/hooks/use-toast'
 import { PantryItem } from '@/types'
-import { Plus, Sparkles, BarChart3 } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Plus, Search, Bell, SlidersHorizontal, Package } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+type LocationFilter = 'All' | 'Fridge' | 'Freezer' | 'Dry pantry'
 
 export function DashboardPage() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null)
+  const [activeFilter, setActiveFilter] = useState<LocationFilter>('All')
+  const [searchQuery, setSearchQuery] = useState('')
   const { data: items = [], isLoading } = usePantryItems()
   const deleteMutation = useDeletePantryItem()
   const { toast } = useToast()
@@ -37,112 +44,182 @@ export function DashboardPage() {
     setShowAddDialog(true)
   }
 
+  const handleAddClick = () => {
+    setEditingItem(null)
+    setShowAddDialog(true)
+  }
+
+  // Filter items by location and search
+  const filteredItems = items.filter(item => {
+    const matchesLocation = activeFilter === 'All' || 
+      (item.location && item.location.toLowerCase().includes(activeFilter.toLowerCase()))
+    const matchesSearch = !searchQuery || 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesLocation && matchesSearch
+  })
+
+  const locationCounts = {
+    'All': items.length,
+    'Fridge': items.filter(i => i.location?.toLowerCase().includes('fridge')).length,
+    'Freezer': items.filter(i => i.location?.toLowerCase().includes('freezer')).length,
+    'Dry pantry': items.filter(i => i.location?.toLowerCase().includes('pantry')).length,
+  }
+
+  const expiredItems = items.filter(
+    item => item.expiry_date && new Date(item.expiry_date) < new Date()
+  ).length
+
   const expiringItems = items.filter(
     item => item.expiry_date && new Date(item.expiry_date) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-  )
+  ).length
+
+  const lowStockItems = items.filter(
+    item => item.expected_amount && item.quantity < item.expected_amount
+  ).length
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      <Header />
-      
-      <main className="container py-8 space-y-8">
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{items.length}</div>
-              <p className="text-xs text-muted-foreground">
-                In your pantry
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
-              <Sparkles className="h-4 w-4 text-yellow-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{expiringItems.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Within 7 days
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {new Set(items.map(item => item.category)).size}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Different types
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+    <div className="flex h-screen bg-gray-50">
+      {/* Desktop Sidebar */}
+      <DesktopSidebar onAddClick={handleAddClick} />
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4">
-          <Button onClick={() => {
-            setEditingItem(null)
-            setShowAddDialog(true)
-          }}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Item
-          </Button>
-          <Button variant="outline">
-            <Sparkles className="mr-2 h-4 w-4" />
-            Get AI Recipe Suggestions
-          </Button>
-        </div>
-
-        {/* Pantry Items */}
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Your Pantry</h2>
-          
-          {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Loading your pantry...</p>
-            </div>
-          ) : items.length === 0 ? (
-            <Card className="text-center py-12">
-              <CardHeader>
-                <CardTitle>Your pantry is empty</CardTitle>
-                <CardDescription>
-                  Start by adding your first item to track your groceries
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={() => setShowAddDialog(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Your First Item
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {items.map((item) => (
-                <PantryItemCard
-                  key={item.id}
-                  item={item}
-                  onDelete={handleDelete}
-                  onEdit={handleEdit}
+      {/* Main Content */}
+      <div className="flex-1 md:ml-64 flex flex-col">
+        {/* Mobile & Desktop Header */}
+        <div className="bg-white border-b sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4">
+            {/* Search and Actions */}
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search items..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-gray-50 border-0"
                 />
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Desktop Add Button */}
+                <Button
+                  onClick={handleAddClick}
+                  className="hidden md:flex bg-emerald-500 hover:bg-emerald-600"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Item
+                </Button>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  {expiredItems > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center">
+                      {expiredItems}
+                    </span>
+                  )}
+                </Button>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <SlidersHorizontal className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Title - Mobile only */}
+            <h1 className="text-3xl font-bold mb-4 md:hidden">Pantry</h1>
+
+            {/* Desktop Stats */}
+            <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Total Items</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{items.length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Expiring Soon</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-orange-600">{expiringItems}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Low Stock</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-600">{lowStockItems}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide">
+              {(['All', 'Fridge', 'Freezer', 'Dry pantry'] as LocationFilter[]).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                    activeFilter === filter
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {filter}
+                  <Badge variant="secondary" className={activeFilter === filter ? 'bg-emerald-600 hover:bg-emerald-600' : 'bg-gray-200'}>
+                    {locationCounts[filter]}
+                  </Badge>
+                </button>
               ))}
             </div>
-          )}
+          </div>
         </div>
-      </main>
 
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 pb-24 md:pb-6">
+            {/* Expired Items Warning */}
+            {expiredItems > 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-red-800">
+                  You have <span className="font-bold">{expiredItems} expired item{expiredItems !== 1 ? 's' : ''}</span>
+                </p>
+              </div>
+            )}
+
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading your pantry...</p>
+              </div>
+            ) : filteredItems.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-xl">
+                <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold mb-2">
+                  {searchQuery ? 'No items found' : 'Your pantry is empty'}
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  {searchQuery ? 'Try a different search term' : 'Start by adding your first item'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4 md:space-y-0">
+                {filteredItems.map((item) => (
+                  <PantryItemCard
+                    key={item.id}
+                    item={item}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* Mobile Bottom Navigation */}
+        <MobileNav onAddClick={handleAddClick} />
+      </div>
+
+      {/* Add/Edit Dialog */}
       <AddItemDialog
         open={showAddDialog}
         onOpenChange={(open) => {
