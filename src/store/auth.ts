@@ -13,27 +13,58 @@ interface AuthState {
   initialize: () => void
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   loading: true,
   initialized: false,
   
   signIn: async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    
-    if (error) throw error
-    
-    if (data.user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .single()
+    try {
+      console.log('🔐 Signing in...')
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
       
-      set({ user: profile, loading: false })
+      if (error) {
+        console.error('❌ Sign in error:', error)
+        throw error
+      }
+      
+      console.log('✅ Auth successful:', data.user?.email)
+      
+      if (data.user) {
+        // Try to get profile, if it doesn't exist, create a basic user object
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single()
+        
+        if (profileError) {
+          console.log('⚠️  Profile fetch error:', profileError.message)
+        }
+        
+        if (profile) {
+          console.log('✅ Profile loaded:', profile.email)
+          set({ user: profile, loading: false })
+        } else {
+          console.log('⚠️  No profile found, creating basic user object')
+          // Profile might not exist yet, use basic user data
+          const basicUser: User = {
+            id: data.user.id,
+            email: data.user.email!,
+            full_name: data.user.user_metadata?.full_name || null,
+            avatar_url: null,
+          }
+          console.log('✅ Using basic user:', basicUser.email)
+          set({ user: basicUser, loading: false })
+        }
+      }
+    } catch (error) {
+      console.error('❌ SignIn exception:', error)
+      set({ loading: false })
+      throw error
     }
   },
   
@@ -51,12 +82,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (error) throw error
     
     if (data.user) {
-      // Create profile
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        email: data.user.email!,
-        full_name: fullName,
-      })
+      // Profile will be created automatically by trigger
+      console.log('✅ User signed up:', data.user.email)
     }
   },
   
@@ -83,27 +110,99 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   
   initialize: () => {
-    const { initialized } = useAuthStore.getState()
-    if (initialized) return
+    const state = get()
+    if (state.initialized) {
+      console.log('⚠️  Already initialized')
+      return
+    }
     
+    console.log('🚀 Initializing auth...')
     set({ initialized: true })
     
     // Listen to auth state changes
     supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 Auth state change:', event, session?.user?.email)
+      
       if (event === 'SIGNED_IN' && session?.user) {
-        const { data: profile } = await supabase
+        console.log('✅ User signed in via state change')
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single()
         
-        set({ user: profile, loading: false })
+        if (profileError) {
+          console.log('⚠️  Profile error in state change:', profileError.message)
+        }
+        
+        if (profile) {
+          console.log('✅ Profile set from state change')
+          set({ user: profile, loading: false })
+        } else {
+          console.log('⚠️  Using basic user from state change')
+          // Use basic user data if profile doesn't exist
+          const basicUser: User = {
+            id: session.user.id,
+            email: session.user.email!,
+            full_name: session.user.user_metadata?.full_name || null,
+            avatar_url: null,
+          }
+          set({ user: basicUser, loading: false })
+        }
       } else if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out')
         set({ user: null, loading: false })
       }
     })
     
-    // Initial auth check
-    useAuthStore.getState().checkAuth()
+    // Initial auth check - do this immediately
+    const checkInitialAuth = async () => {
+      try {
+        console.log('🔍 Checking initial auth...')
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('❌ Session error:', error)
+          set({ user: null, loading: false })
+          return
+        }
+        
+        if (session?.user) {
+          console.log('✅ Session found:', session.user.email)
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          
+          if (profileError) {
+            console.log('⚠️  Profile error:', profileError.message, profileError.code)
+          }
+          
+          if (profile) {
+            console.log('✅ Profile loaded on init')
+            set({ user: profile, loading: false })
+          } else {
+            console.log('⚠️  No profile, using basic user on init')
+            // Use basic user data if profile doesn't exist
+            const basicUser: User = {
+              id: session.user.id,
+              email: session.user.email!,
+              full_name: session.user.user_metadata?.full_name || null,
+              avatar_url: null,
+            }
+            set({ user: basicUser, loading: false })
+          }
+        } else {
+          console.log('ℹ️  No session found')
+          set({ user: null, loading: false })
+        }
+      } catch (error) {
+        console.error('❌ Auth initialization error:', error)
+        set({ user: null, loading: false })
+      }
+    }
+    
+    checkInitialAuth()
   },
 }))
