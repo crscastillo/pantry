@@ -57,8 +57,8 @@ export function useUpdatePantryItem() {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<PantryItem> & { id: string }) => {
-      // Remove read-only fields
-      const { created_at, updated_at, ...rest } = updates as any
+      // Remove read-only fields that shouldn't be updated
+      const { created_at, updated_at, user_id, ...rest } = updates as any
 
       const { data, error } = await (supabase as any)
         .from('pantry_items')

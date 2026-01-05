@@ -171,9 +171,9 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[100vh] sm:h-[90vh] overflow-y-auto p-0 gap-0">
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-2xl h-[100vh] sm:h-[90vh] overflow-y-auto p-0 gap-0">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b p-4 z-10">
+        <div className="sticky top-0 bg-white border-b p-3 sm:p-4 z-10">
           <div className="flex items-center justify-between mb-4">
             <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
               <ArrowLeft className="h-5 w-5" />
@@ -193,7 +193,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Item Header */}
           <div>
             <div className="text-5xl mb-4">{getCategoryEmoji(formData.category)}</div>
@@ -201,7 +201,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Item name"
-              className="text-2xl font-bold border-0 p-0 h-auto focus-visible:ring-0"
+              className="text-2xl font-bold border-0 p-0 h-auto focus-visible:ring-0 break-words"
               required
             />
             <Badge variant="secondary" className="mt-2">
@@ -210,7 +210,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="text-xs text-gray-500 mb-1">In pantry</div>
               <div className="font-semibold">
@@ -261,7 +261,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="quantity">Current Amount</Label>
                 <Input

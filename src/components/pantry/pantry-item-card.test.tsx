@@ -121,4 +121,32 @@ describe('PantryItemCard', () => {
     const card = screen.getByText('Milk').closest('div')
     expect(card).toBeInTheDocument()
   })
+
+  it('should have overflow-hidden class for mobile UX', () => {
+    const { container } = render(
+      <PantryItemCard item={mockItem} onDelete={mockOnDelete} onEdit={mockOnEdit} />,
+      { wrapper: createWrapper() }
+    )
+
+    // Check that the button has overflow-hidden to prevent horizontal scroll
+    const button = container.querySelector('button')
+    expect(button).toHaveClass('overflow-hidden')
+  })
+
+  it('should render with responsive width and proper text wrapping', () => {
+    const longNameItem = {
+      ...mockItem,
+      name: 'Very Long Item Name That Should Wrap Properly On Small Screens Without Causing Overflow',
+    }
+
+    const { container } = render(
+      <PantryItemCard item={longNameItem} onDelete={mockOnDelete} onEdit={mockOnEdit} />,
+      { wrapper: createWrapper() }
+    )
+
+    const button = container.querySelector('button')
+    expect(button).toHaveClass('w-full')
+    expect(button).toHaveClass('overflow-hidden')
+    expect(screen.getByText(longNameItem.name)).toBeInTheDocument()
+  })
 })

@@ -50,7 +50,7 @@ export function PantryItemCard({ item, onDelete, onEdit }: PantryItemCardProps) 
     <>
       <button
         onClick={() => onEdit(item)}
-        className="w-full bg-white rounded-xl p-4 hover:shadow-md transition-shadow border border-gray-100 text-left"
+        className="w-full bg-white rounded-xl p-4 hover:shadow-md transition-shadow border border-gray-100 text-left overflow-hidden"
       >
         <div className="flex items-start gap-4">
           {/* Icon */}

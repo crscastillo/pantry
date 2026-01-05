@@ -78,17 +78,17 @@ export function DashboardPage() {
   ).length
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-x-hidden">
       {/* Desktop Sidebar */}
       <DesktopSidebar onAddClick={handleAddClick} />
 
       {/* Main Content */}
-      <div className="flex-1 md:ml-64 flex flex-col">
+      <div className="flex-1 md:ml-64 flex flex-col overflow-x-hidden w-full">
         {/* Mobile & Desktop Header */}
-        <div className="bg-white border-b sticky top-0 z-10">
+        <div className="bg-white border-b sticky top-0 z-10 overflow-x-hidden">
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4">
             {/* Search and Actions */}
-            <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 md:mb-6">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -175,7 +175,7 @@ export function DashboardPage() {
         </div>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 pb-24 md:pb-6">
             {/* Expired Items Warning */}
             {expiredItems > 0 && (
