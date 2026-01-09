@@ -6,21 +6,37 @@ import { LandingPage } from '@/pages/landing'
 import { LoginPage } from '@/pages/login'
 import { SignupPage } from '@/pages/signup'
 import { DashboardPage } from '@/pages/dashboard'
+import { ShoppingListPage } from '@/pages/shopping-list'
 import { Toaster } from '@/components/ui/toaster'
+import { Package } from 'lucide-react'
 
 const queryClient = new QueryClient()
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuthStore()
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <Package className="h-12 w-12 mx-auto text-emerald-500 animate-pulse mb-4" />
+        <p className="text-muted-foreground animate-pulse">Loading...</p>
       </div>
-    )
+    </div>
+  )
+}
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading, initialized } = useAuthStore()
+
+  // Show loading only during initial authentication check
+  if (!initialized) {
+    return <LoadingScreen />
   }
 
+  // If we're still loading after initialization (shouldn't happen often)
+  if (loading) {
+    return <LoadingScreen />
+  }
+
+  // If user is not authenticated, redirect to login
   if (!user) {
     return <Navigate to="/login" replace />
   }
@@ -29,16 +45,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuthStore()
+  const { user, loading, initialized } = useAuthStore()
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    )
+  // Show loading only during initial authentication check
+  if (!initialized) {
+    return <LoadingScreen />
   }
 
+  // If we're still loading after initialization (shouldn't happen often)
+  if (loading) {
+    return <LoadingScreen />
+  }
+
+  // If user is authenticated, redirect to dashboard
   if (user) {
     return <Navigate to="/dashboard" replace />
   }
@@ -77,6 +96,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/shopping"
+        element={
+          <ProtectedRoute>
+            <ShoppingListPage />
           </ProtectedRoute>
         }
       />

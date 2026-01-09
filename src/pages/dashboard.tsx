@@ -1,24 +1,27 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { PantryItemCard } from '@/components/pantry/pantry-item-card'
+import { PantryQuickAdjustCard } from '@/components/pantry/pantry-quick-adjust-card'
 import { AddItemDialog } from '@/components/pantry/add-item-dialog'
 import { MobileNav } from '@/components/layout/mobile-nav'
 import { DesktopSidebar } from '@/components/layout/desktop-sidebar'
 import { usePantryItems, useDeletePantryItem } from '@/hooks/use-pantry'
 import { useToast } from '@/hooks/use-toast'
 import { PantryItem } from '@/types'
-import { Plus, Search, Bell, SlidersHorizontal, Package } from 'lucide-react'
+import { Plus, Search, Bell, SlidersHorizontal, Package, Zap } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 type LocationFilter = 'All' | 'Fridge' | 'Freezer' | 'Dry pantry'
+type ViewMode = 'manage' | 'adjust'
 
 export function DashboardPage() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null)
   const [activeFilter, setActiveFilter] = useState<LocationFilter>('All')
   const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<ViewMode>('adjust')
   const { data: items = [], isLoading } = usePantryItems()
   const deleteMutation = useDeletePantryItem()
   const { toast } = useToast()
@@ -99,6 +102,27 @@ export function DashboardPage() {
                 />
               </div>
               <div className="flex items-center gap-2">
+                {/* View Mode Selector */}
+                <div className="hidden md:flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                  <Button
+                    variant={viewMode === 'adjust' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('adjust')}
+                    className={viewMode === 'adjust' ? 'bg-white shadow-sm' : 'hover:bg-transparent'}
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Quick Adjust
+                  </Button>
+                  <Button
+                    variant={viewMode === 'manage' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('manage')}
+                    className={viewMode === 'manage' ? 'bg-white shadow-sm' : 'hover:bg-transparent'}
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    Manage
+                  </Button>
+                </div>
                 {/* Desktop Add Button */}
                 <Button
                   onClick={handleAddClick}
@@ -123,6 +147,28 @@ export function DashboardPage() {
 
             {/* Title - Mobile only */}
             <h1 className="text-3xl font-bold mb-4 md:hidden">Pantry</h1>
+            
+            {/* Mobile View Mode Toggle */}
+            <div className="md:hidden flex items-center gap-1 bg-gray-100 rounded-lg p-1 mb-4">
+              <Button
+                variant={viewMode === 'adjust' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('adjust')}
+                className={`flex-1 ${viewMode === 'adjust' ? 'bg-white shadow-sm' : 'hover:bg-transparent'}`}
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Quick Adjust
+              </Button>
+              <Button
+                variant={viewMode === 'manage' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('manage')}
+                className={`flex-1 ${viewMode === 'manage' ? 'bg-white shadow-sm' : 'hover:bg-transparent'}`}
+              >
+                <Package className="h-4 w-4 mr-2" />
+                Manage
+              </Button>
+            </div>
 
             {/* Desktop Stats */}
             <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
@@ -203,12 +249,19 @@ export function DashboardPage() {
             ) : (
               <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4 md:space-y-0">
                 {filteredItems.map((item) => (
-                  <PantryItemCard
-                    key={item.id}
-                    item={item}
-                    onDelete={handleDelete}
-                    onEdit={handleEdit}
-                  />
+                  viewMode === 'adjust' ? (
+                    <PantryQuickAdjustCard
+                      key={item.id}
+                      item={item}
+                    />
+                  ) : (
+                    <PantryItemCard
+                      key={item.id}
+                      item={item}
+                      onDelete={handleDelete}
+                      onEdit={handleEdit}
+                    />
+                  )
                 ))}
               </div>
             )}

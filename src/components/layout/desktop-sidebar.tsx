@@ -1,7 +1,8 @@
-import { Package, UtensilsCrossed, ShoppingCart, LogOut, BarChart3 } from 'lucide-react'
+import { Package, UtensilsCrossed, ShoppingCart, LogOut } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/button'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 interface DesktopSidebarProps {
   onAddClick: () => void
@@ -10,6 +11,8 @@ interface DesktopSidebarProps {
 export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
   const { toast } = useToast()
   const { signOut, user } = useAuthStore()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   return (
     <div className="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 bg-white border-r">
@@ -34,9 +37,27 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 px-4 space-y-1">
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-emerald-50 text-emerald-600">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg ${
+              location.pathname === '/dashboard'
+                ? 'bg-emerald-50 text-emerald-600'
+                : 'text-gray-700 hover:bg-gray-50'
+            }`}
+          >
             <Package className="h-5 w-5" />
-            My Pantry
+            Pantry
+          </button>
+          <button 
+            onClick={() => navigate('/shopping')}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg ${
+              location.pathname === '/shopping'
+                ? 'bg-emerald-50 text-emerald-600'
+                : 'text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            Shopping List
           </button>
           <button 
             className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
@@ -44,20 +65,6 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
           >
             <UtensilsCrossed className="h-5 w-5" />
             Recipes
-          </button>
-          <button 
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
-            onClick={() => toast({ title: "Coming soon!", description: "Shopping list feature is in development" })}
-          >
-            <ShoppingCart className="h-5 w-5" />
-            Shopping List
-          </button>
-          <button 
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
-            onClick={() => toast({ title: "Coming soon!", description: "Analytics feature is in development" })}
-          >
-            <BarChart3 className="h-5 w-5" />
-            Analytics
           </button>
         </nav>
 

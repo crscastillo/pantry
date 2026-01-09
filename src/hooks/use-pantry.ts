@@ -115,3 +115,39 @@ export function useDeletePantryItem() {
     },
   })
 }
+
+export function useQuickAdjustQuantity() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, delta }: { id: string; delta: number }) => {
+      // First get the current item
+      const { data: currentItem, error: fetchError } = await supabase
+        .from('pantry_items')
+        .select('quantity')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+      if (!currentItem) throw new Error('Item not found')
+
+      // Calculate new quantity (don't go below 0)
+      const newQuantity = Math.max(0, (currentItem as { quantity: number }).quantity + delta)
+
+      // Update the quantity
+      const { data, error } = await (supabase as any)
+        .from('pantry_items')
+        .update({ quantity: newQuantity })
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+      if (!data) throw new Error('No data returned from update')
+      return data as PantryItem
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pantry-items'] })
+    },
+  })
+}

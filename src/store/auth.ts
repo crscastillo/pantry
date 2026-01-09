@@ -16,7 +16,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  loading: true,
+  loading: false, // Start with false, set to true only during initialization
   initialized: false,
   
   signIn: async (email: string, password: string) => {
@@ -157,7 +157,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     
     console.log('🚀 Initializing auth...')
-    set({ initialized: true })
+    set({ initialized: true, loading: true })
     
     // Listen to auth state changes
     supabase.auth.onAuthStateChange(async (event, session) => {
@@ -201,10 +201,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } else if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out')
         set({ user: null, loading: false })
+      } else if (event === 'TOKEN_REFRESHED') {
+        // Don't show loading on token refresh
+        console.log('🔄 Token refreshed silently')
       }
     })
     
-    // Initial auth check - do this immediately
+    // Initial auth check - do this immediately with optimized loading
     const checkInitialAuth = async () => {
       try {
         console.log('🔍 Checking initial auth...')

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { useAddPantryItem, useUpdatePantryItem, useDeletePantryItem } from '@/hooks/use-pantry'
 import { useToast } from '@/hooks/use-toast'
 import { PantryItem, PantryCategory, PantryUnit } from '@/types'
-import { ArrowLeft, Trash2, ShoppingBag } from 'lucide-react'
+import { ArrowLeft, Trash2, ShoppingBag, Camera, Loader2, Sparkles } from 'lucide-react'
+import { analyzeProductImage, fileToDataURL, compressImage } from '@/lib/ai-service'
 
 interface AddItemDialogProps {
   open: boolean
@@ -58,6 +59,9 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
     location: '',
     notes: '',
   })
+
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const addMutation = useAddPantryItem()
   const updateMutation = useUpdatePantryItem()
@@ -169,6 +173,53 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
     return emojiMap[category] || '📦'
   }
 
+  const handleImageCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setIsAnalyzing(true)
+    try {
+      // Compress image if needed
+      const compressedFile = await compressImage(file)
+      
+      // Convert to base64
+      const dataURL = await fileToDataURL(compressedFile)
+      
+      // Analyze with AI
+      const productData = await analyzeProductImage(dataURL)
+      
+      // Auto-fill form
+      setFormData({
+        name: productData.name || formData.name,
+        category: (productData.category as PantryCategory) || formData.category,
+        quantity: productData.quantity || formData.quantity,
+        expected_amount: formData.expected_amount,
+        unit: (productData.unit as PantryUnit) || formData.unit,
+        expiry_date: productData.expiryDate || formData.expiry_date,
+        purchase_date: formData.purchase_date,
+        location: productData.location || formData.location,
+        notes: productData.notes || formData.notes,
+      })
+      
+      toast({
+        title: "Product recognized!",
+        description: "Form has been auto-filled with product details.",
+      })
+    } catch (error) {
+      toast({
+        title: "Analysis failed",
+        description: error instanceof Error ? error.message : "Could not analyze the image. Please fill in manually.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsAnalyzing(false)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-1rem)] max-w-2xl h-[100vh] sm:h-[90vh] overflow-y-auto p-0 gap-0">
@@ -179,6 +230,32 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex gap-2">
+              {!editingItem && (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleImageCapture}
+                    disabled={isAnalyzing}
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isAnalyzing}
+                    title="Scan product with AI"
+                  >
+                    {isAnalyzing ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Camera className="h-5 w-5" />
+                    )}
+                  </Button>
+                </>
+              )}
               {editingItem && (
                 <>
                   <Button variant="ghost" size="icon" onClick={() => toast({ title: "Coming soon!" })}>
@@ -191,6 +268,12 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
               )}
             </div>
           </div>
+          {isAnalyzing && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-600 animate-pulse" />
+              <span className="text-sm text-emerald-800">Analyzing product with AI...</span>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 p-4 sm:p-6 space-y-4 sm:space-y-6">
