@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button'
 import { PantryItemCard } from '@/components/pantry/pantry-item-card'
 import { PantryQuickAdjustCard } from '@/components/pantry/pantry-quick-adjust-card'
 import { AddItemDialog } from '@/components/pantry/add-item-dialog'
-import { MobileNav } from '@/components/layout/mobile-nav'
-import { DesktopSidebar } from '@/components/layout/desktop-sidebar'
+import { Navigation } from '@/components/layout/navigation'
 import { usePantryItems, useDeletePantryItem } from '@/hooks/use-pantry'
 import { useToast } from '@/hooks/use-toast'
 import { PantryItem } from '@/types'
@@ -82,8 +81,8 @@ export function DashboardPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-x-hidden">
-      {/* Desktop Sidebar */}
-      <DesktopSidebar onAddClick={handleAddClick} />
+      {/* Responsive Navigation */}
+      <Navigation onAddClick={handleAddClick} />
 
       {/* Main Content */}
       <div className="flex-1 md:ml-64 flex flex-col overflow-x-hidden w-full">
@@ -267,9 +266,6 @@ export function DashboardPage() {
             )}
           </div>
         </main>
-
-        {/* Mobile Bottom Navigation */}
-        <MobileNav onAddClick={handleAddClick} />
       </div>
 
       {/* Add/Edit Dialog */}
