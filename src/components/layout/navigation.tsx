@@ -1,4 +1,4 @@
-import { Package, Plus, ShoppingCart, UtensilsCrossed, LogOut } from 'lucide-react'
+import { Package, Plus, ShoppingCart, UtensilsCrossed, LogOut, Settings } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/store/auth'
@@ -23,6 +23,7 @@ export function Navigation({ onAddClick }: NavigationProps) {
       icon: UtensilsCrossed,
       onClick: () => toast({ title: "Coming soon!", description: "Recipe suggestions feature is in development" })
     },
+    { path: '/settings', label: 'Settings', icon: Settings },
   ]
 
   return (
@@ -102,32 +103,34 @@ export function Navigation({ onAddClick }: NavigationProps) {
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t safe-bottom z-50">
         <div className="max-w-2xl mx-auto px-2 py-2">
           <div className="flex items-center justify-around">
-            {navItems.map((item, index) => {
+            {navItems.slice(0, 2).map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.path
               
-              // Insert Add button in the middle
-              if (index === 1) {
-                return (
-                  <div key={`${item.path}-group`} className="flex items-center justify-around flex-1">
-                    <button
-                      onClick={onAddClick}
-                      className="flex items-center justify-center w-14 h-14 -mt-6 bg-emerald-500 rounded-full text-white shadow-lg hover:bg-emerald-600 transition-colors active:scale-95"
-                    >
-                      <Plus className="h-7 w-7" />
-                    </button>
-                    <button 
-                      onClick={item.onClick || (() => navigate(item.path))}
-                      className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors ${
-                        isActive ? 'text-emerald-500' : 'text-gray-400 hover:text-gray-600'
-                      }`}
-                    >
-                      <Icon className="h-6 w-6" />
-                      <span className="text-xs font-medium">{item.label}</span>
-                    </button>
-                  </div>
-                )
-              }
+              return (
+                <button 
+                  key={item.path}
+                  onClick={item.onClick || (() => navigate(item.path))}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors ${
+                    isActive ? 'text-emerald-500' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Icon className="h-6 w-6" />
+                  <span className="text-xs font-medium">{item.label}</span>
+                </button>
+              )
+            })}
+            
+            <button
+              onClick={onAddClick}
+              className="flex items-center justify-center w-14 h-14 -mt-6 bg-emerald-500 rounded-full text-white shadow-lg hover:bg-emerald-600 transition-colors active:scale-95"
+            >
+              <Plus className="h-7 w-7" />
+            </button>
+            
+            {navItems.slice(2).map((item) => {
+              const Icon = item.icon
+              const isActive = location.pathname === item.path
               
               return (
                 <button 

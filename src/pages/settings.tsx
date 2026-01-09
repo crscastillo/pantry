@@ -1,0 +1,308 @@
+import { useState, useEffect } from 'react'
+import { Navigation } from '@/components/layout/navigation'
+import { AddItemDialog } from '@/components/pantry/add-item-dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { useAuthStore } from '@/store/auth'
+import { Settings as SettingsIcon, Check, Zap, Sparkles, Crown, Camera } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
+import { getSubscriptionTiers, createCheckoutSession } from '@/lib/subscription'
+import type { SubscriptionTier } from '@/types/subscription'
+
+export function SettingsPage() {
+  const [showAddDialog, setShowAddDialog] = useState(false)
+  const { user } = useAuthStore()
+  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
+  const [tiers, setTiers] = useState<SubscriptionTier[]>([])
+  const [loadingTiers, setLoadingTiers] = useState(true)
+  
+  // TODO: Fetch actual subscription status from your backend
+  const [currentTier, _setCurrentTier] = useState<'free' | 'pro-monthly' | 'pro-yearly'>('free')
+
+  useEffect(() => {
+    loadSubscriptionTiers()
+  }, [])
+
+  const loadSubscriptionTiers = async () => {
+    try {
+      const data = await getSubscriptionTiers()
+      setTiers(data)
+    } catch (error) {
+      toast({
+        title: "Error loading subscription tiers",
+        description: error instanceof Error ? error.message : "Failed to load pricing",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingTiers(false)
+    }
+  }
+
+  const handleAddClick = () => {
+    setShowAddDialog(true)
+  }
+
+  const handleSubscribe = async (tierId: string) => {
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to subscribe",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      await createCheckoutSession(tierId, user.id)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to start checkout process",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex h-screen bg-gray-50">
+      <Navigation onAddClick={handleAddClick} />
+
+      <div className="flex-1 md:ml-64 flex flex-col overflow-hidden w-full">
+        {/* Header */}
+        <div className="bg-white border-b sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4">
+            <div className="flex items-center gap-3">
+              <SettingsIcon className="h-8 w-8 text-emerald-500" />
+              <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-6">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+            <Tabs defaultValue="subscription" className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="subscription">Subscription</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="subscription" className="space-y-6 mt-6">
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">Choose Your Plan</h2>
+                  <p className="text-gray-600">Upgrade to unlock premium features and unlimited access</p>
+                </div>
+
+                {loadingTiers ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">Loading subscription plans...</p>
+                  </div>
+                ) : tiers.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">No subscription plans available</p>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {tiers.map((tier) => {
+                      const isCurrentTier = currentTier === tier.id
+                      const isFree = tier.price === 0
+                      const isYearly = tier.interval === 'year'
+                      
+                      // Select icon based on tier
+                      const TierIcon = isFree ? Zap : isYearly ? Sparkles : Camera
+                      const iconBgColor = isFree ? 'bg-gray-100' : isYearly ? 'bg-amber-100' : 'bg-emerald-100'
+                      const iconColor = isFree ? 'text-gray-600' : isYearly ? 'text-amber-600' : 'text-emerald-600'
+                      
+                      return (
+                        <Card 
+                          key={tier.id} 
+                          className={`relative ${
+                            isCurrentTier 
+                              ? 'border-emerald-500 border-2' 
+                              : isYearly 
+                                ? 'border-amber-200 border-2' 
+                                : ''
+                          }`}
+                        >
+                          {(isCurrentTier || (isYearly && !isCurrentTier)) && (
+                            <Badge className={`absolute -top-3 left-1/2 transform -translate-x-1/2 ${
+                              isCurrentTier ? 'bg-emerald-500' : 'bg-amber-500'
+                            }`}>
+                              {isCurrentTier ? 'Current Plan' : 'Best Value'}
+                            </Badge>
+                          )}
+                          <CardHeader>
+                            <div className={`w-12 h-12 rounded-full ${iconBgColor} flex items-center justify-center mb-4`}>
+                              <TierIcon className={`h-6 w-6 ${iconColor}`} />
+                            </div>
+                            <CardTitle className="flex items-center gap-2">
+                              {tier.name}
+                              {!isFree && <Crown className="h-4 w-4 text-amber-500" />}
+                            </CardTitle>
+                            <CardDescription>
+                              {isFree ? 'Perfect for getting started' : 
+                               isYearly ? 'Save 17% with annual billing' : 
+                               'For power users'}
+                            </CardDescription>
+                            <div className="mt-4">
+                              <span className="text-4xl font-bold">${tier.price}</span>
+                              <span className="text-gray-500">/{tier.interval}</span>
+                            </div>
+                            {isYearly && tier.price > 0 && (
+                              <p className="text-sm text-emerald-600 font-medium mt-1">
+                                Save $15/year
+                              </p>
+                            )}
+                          </CardHeader>
+                          <CardContent>
+                            <ul className="space-y-3 mb-6">
+                              {tier.features.map((feature, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                  <span className={`text-sm ${!isFree ? 'font-medium' : ''}`}>
+                                    {feature}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                            {isCurrentTier ? (
+                              <Button disabled className="w-full">
+                                Current Plan
+                              </Button>
+                            ) : isFree ? (
+                              <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => handleSubscribe(tier.id)}
+                                disabled={isLoading}
+                              >
+                                Downgrade
+                              </Button>
+                            ) : (
+                              <Button
+                                className={`w-full ${
+                                  isYearly 
+                                    ? 'bg-amber-500 hover:bg-amber-600' 
+                                    : 'bg-emerald-500 hover:bg-emerald-600'
+                                }`}
+                                onClick={() => handleSubscribe(tier.id)}
+                                disabled={isLoading || !tier.stripe_price_id}
+                              >
+                                {isLoading ? 'Loading...' : 
+                                 !tier.stripe_price_id ? 'Coming Soon' :
+                                 'Upgrade to Pro'}
+                              </Button>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Features Comparison */}
+                <Card className="mt-8">
+                  <CardHeader>
+                    <CardTitle>Feature Comparison</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-4">Feature</th>
+                            <th className="text-center py-3 px-4">Free</th>
+                            <th className="text-center py-3 px-4">Pro</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b">
+                            <td className="py-3 px-4">Pantry Items</td>
+                            <td className="text-center py-3 px-4">50</td>
+                            <td className="text-center py-3 px-4">Unlimited</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="py-3 px-4">AI Photo Scans</td>
+                            <td className="text-center py-3 px-4">5/month</td>
+                            <td className="text-center py-3 px-4">Unlimited</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="py-3 px-4">Shopping List</td>
+                            <td className="text-center py-3 px-4"><Check className="h-5 w-5 text-emerald-500 mx-auto" /></td>
+                            <td className="text-center py-3 px-4"><Check className="h-5 w-5 text-emerald-500 mx-auto" /></td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="py-3 px-4">Expiry Reminders</td>
+                            <td className="text-center py-3 px-4">-</td>
+                            <td className="text-center py-3 px-4"><Check className="h-5 w-5 text-emerald-500 mx-auto" /></td>
+                          </tr>
+                          <tr>
+                            <td className="py-3 px-4">AI Recipe Suggestions</td>
+                            <td className="text-center py-3 px-4">-</td>
+                            <td className="text-center py-3 px-4"><Check className="h-5 w-5 text-emerald-500 mx-auto" /></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="settings" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Account Settings</CardTitle>
+                    <CardDescription>Manage your account preferences</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <div>
+                        <p className="font-medium">Email</p>
+                        <p className="text-sm text-gray-500">{user?.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <div>
+                        <p className="font-medium">Notifications</p>
+                        <p className="text-sm text-gray-500">Receive expiry reminders</p>
+                      </div>
+                      <Button variant="outline" size="sm">Configure</Button>
+                    </div>
+                    <div className="flex items-center justify-between py-3">
+                      <div>
+                        <p className="font-medium">Data Export</p>
+                        <p className="text-sm text-gray-500">Download your pantry data</p>
+                      </div>
+                      <Button variant="outline" size="sm">Export</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Danger Zone</CardTitle>
+                    <CardDescription>Irreversible actions</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="destructive">Delete Account</Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </main>
+      </div>
+
+      <AddItemDialog 
+        open={showAddDialog} 
+        onOpenChange={setShowAddDialog}
+      />
+    </div>
+  )
+}
