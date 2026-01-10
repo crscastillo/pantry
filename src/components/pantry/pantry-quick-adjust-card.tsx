@@ -4,16 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PantryItem } from '@/types'
-import { Minus, Plus, Edit, Info } from 'lucide-react'
+import { Minus, Plus, Edit2 } from 'lucide-react'
 import { useQuickAdjustQuantity } from '@/hooks/use-pantry'
 import { useToast } from '@/hooks/use-toast'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
 
 interface PantryQuickAdjustCardProps {
   item: PantryItem
@@ -45,7 +38,6 @@ export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardPro
   const { toast } = useToast()
   const adjustMutation = useQuickAdjustQuantity()
   const [isAdjusting, setIsAdjusting] = useState(false)
-  const [showDrawer, setShowDrawer] = useState(false)
 
   const today = new Date()
   const expiryDate = item.expiry_date ? new Date(item.expiry_date) : null
@@ -75,15 +67,7 @@ export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardPro
     }
   }
 
-  const handleEdit = () => {
-    setShowDrawer(false)
-    if (onEdit) {
-      onEdit(item)
-    }
-  }
-
   return (
-    <>
       <div className="w-full bg-white rounded-xl p-4 border border-gray-100 overflow-hidden">
         <div className="flex items-start gap-4">
           {/* Icon */}
@@ -104,11 +88,11 @@ export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardPro
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 flex-shrink-0"
-                  onClick={() => setShowDrawer(true)}
-                  title="View details"
+                  className="h-7 w-7 flex-shrink-0 hover:bg-gray-100"
+                  onClick={() => onEdit(item)}
+                  title="Edit item"
                 >
-                  <Info className="h-4 w-4" />
+                  <Edit2 className="h-3.5 w-3.5 text-gray-600" />
                 </Button>
               )}
             </div>
@@ -178,95 +162,5 @@ export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardPro
           </div>
         </div>
       </div>
-
-      {/* Drawer */}
-      {onEdit && (
-        <Sheet open={showDrawer} onOpenChange={setShowDrawer}>
-          <SheetContent side="right">
-            <SheetHeader>
-              <SheetTitle className="flex items-center gap-3">
-                <span className="text-4xl">{getCategoryEmoji(item.category)}</span>
-                <span>{item.name}</span>
-              </SheetTitle>
-              <SheetDescription>
-                View and manage item details
-              </SheetDescription>
-            </SheetHeader>
-
-            <div className="mt-6 space-y-4">
-              {/* Item Details */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-sm text-gray-500">Quantity</span>
-                  <span className="font-medium">{item.quantity} {t(getUnitTranslationKey(item.unit))}</span>
-                </div>
-                
-                {item.expected_amount && (
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-sm text-gray-500">Expected Amount</span>
-                    <span className="font-medium">{item.expected_amount} {t(getUnitTranslationKey(item.unit))}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-sm text-gray-500">Category</span>
-                  <span className="font-medium">{item.category}</span>
-                </div>
-
-                {item.location && (
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-sm text-gray-500">Location</span>
-                    <span className="font-medium">{item.location}</span>
-                  </div>
-                )}
-
-                {item.expiry_date && (
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-sm text-gray-500">Expiry Date</span>
-                    <span className={`font-medium ${
-                      isExpired ? 'text-red-600' : isExpiringSoon ? 'text-orange-600' : ''
-                    }`}>
-                      {new Date(item.expiry_date).toLocaleDateString()}
-                      {daysUntilExpiry !== null && (
-                        <span className="text-xs ml-2">
-                          ({isExpired 
-                            ? `Expired ${Math.abs(daysUntilExpiry)} days ago` 
-                            : `${daysUntilExpiry} days left`})
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                )}
-
-                {item.purchase_date && (
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-sm text-gray-500">Purchase Date</span>
-                    <span className="font-medium">{new Date(item.purchase_date).toLocaleDateString()}</span>
-                  </div>
-                )}
-
-                {item.notes && (
-                  <div className="py-2">
-                    <span className="text-sm text-gray-500 block mb-1">Notes</span>
-                    <p className="text-sm text-gray-900">{item.notes}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="pt-4">
-                <Button
-                  onClick={handleEdit}
-                  className="w-full bg-emerald-500 hover:bg-emerald-600"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Item
-                </Button>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      )}
-    </>
   )
 }

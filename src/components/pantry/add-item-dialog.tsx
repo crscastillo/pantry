@@ -58,6 +58,10 @@ const locations = [
 
 export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialogProps) {
   const { t } = useTranslation()
+  const [customLocations, setCustomLocations] = useState<string[]>(() => {
+    const saved = localStorage.getItem('pantry_custom_locations')
+    return saved ? JSON.parse(saved) : []
+  })
   const [formData, setFormData] = useState({
     name: '',
     category: 'Other' as PantryCategory,
@@ -113,6 +117,11 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
     e.preventDefault()
 
     try {
+      // Save custom location if it's new
+      if (formData.location) {
+        saveCustomLocation(formData.location)
+      }
+
       if (editingItem) {
         await updateMutation.mutateAsync({
           id: editingItem.id,
@@ -217,6 +226,18 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
     return keyMap[location] || location
   }
 
+  const getAllLocations = () => {
+    return [...locations, ...customLocations.filter(loc => !locations.includes(loc))]
+  }
+
+  const saveCustomLocation = (location: string) => {
+    if (location && !locations.includes(location) && !customLocations.includes(location)) {
+      const updated = [...customLocations, location]
+      setCustomLocations(updated)
+      localStorage.setItem('pantry_custom_locations', JSON.stringify(updated))
+    }
+  }
+
   const handleImageCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -268,7 +289,8 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
     setFormData({ ...formData, location: value })
     
     if (value) {
-      const filtered = locations.filter(loc => 
+      const allLocations = getAllLocations()
+      const filtered = allLocations.filter(loc => 
         t(getLocationTranslationKey(loc)).toLowerCase().includes(value.toLowerCase()) ||
         loc.toLowerCase().includes(value.toLowerCase())
       )
@@ -422,7 +444,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
                         if (formData.location) {
                           handleLocationChange(formData.location)
                         } else {
-                          setFilteredLocations(locations)
+                          setFilteredLocations(getAllLocations())
                           setShowLocationSuggestions(true)
                         }
                       }}

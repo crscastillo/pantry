@@ -1,47 +1,34 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { PantryItemCard } from '@/components/pantry/pantry-item-card'
 import { PantryQuickAdjustCard } from '@/components/pantry/pantry-quick-adjust-card'
 import { AddItemDialog } from '@/components/pantry/add-item-dialog'
 import { Navigation } from '@/components/layout/navigation'
-import { usePantryItems, useDeletePantryItem } from '@/hooks/use-pantry'
-import { useToast } from '@/hooks/use-toast'
+import { usePantryItems } from '@/hooks/use-pantry'
 import { PantryItem } from '@/types'
-import { Plus, Search, Bell, SlidersHorizontal, Package, Zap } from 'lucide-react'
+import { Plus, Search, Bell, Package } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-type LocationFilter = 'All' | 'Fridge' | 'Freezer' | 'Dry pantry'
-type ViewMode = 'manage' | 'adjust'
+const getLocationTranslationKey = (location: string) => {
+  const keyMap: Record<string, string> = {
+    'Fridge': 'pantry.locations.fridge',
+    'Freezer': 'pantry.locations.freezer',
+    'Dry Pantry': 'pantry.locations.dryPantry',
+    'Cupboard': 'pantry.locations.cupboard',
+    'Counter': 'pantry.locations.counter',
+  }
+  return keyMap[location] || null
+}
 
 export function DashboardPage() {
   const { t } = useTranslation()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null)
-  const [activeFilter, setActiveFilter] = useState<LocationFilter>('All')
+  const [activeFilter, setActiveFilter] = useState<string>('All')
   const [searchQuery, setSearchQuery] = useState('')
-  const [viewMode, setViewMode] = useState<ViewMode>('adjust')
   const { data: items = [], isLoading } = usePantryItems()
-  const deleteMutation = useDeletePantryItem()
-  const { toast } = useToast()
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteMutation.mutateAsync(id)
-      toast({
-        title: t('pantry.itemDeleted'),
-        description: t('pantry.itemDeletedDesc'),
-      })
-    } catch (error) {
-      toast({
-        title: t('pantry.error'),
-        description: t('pantry.deleteError'),
-        variant: "destructive",
-      })
-    }
-  }
 
   const handleEdit = (item: PantryItem) => {
     setEditingItem(item)
@@ -53,20 +40,27 @@ export function DashboardPage() {
     setShowAddDialog(true)
   }
 
+  // Get all unique locations from items
+  const getUniqueLocations = () => {
+    const allLocations = items
+      .map(item => item.location)
+      .filter((loc): loc is string => !!loc && loc.trim() !== '')
+    return ['All', ...Array.from(new Set(allLocations))]
+  }
+
+  const availableFilters = getUniqueLocations()
+
   // Filter items by location and search
   const filteredItems = items.filter(item => {
-    const matchesLocation = activeFilter === 'All' || 
-      (item.location && item.location.toLowerCase().includes(activeFilter.toLowerCase()))
+    const matchesLocation = activeFilter === 'All' || item.location === activeFilter
     const matchesSearch = !searchQuery || 
       item.name.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesLocation && matchesSearch
   })
 
-  const locationCounts = {
-    'All': items.length,
-    'Fridge': items.filter(i => i.location?.toLowerCase().includes('fridge')).length,
-    'Freezer': items.filter(i => i.location?.toLowerCase().includes('freezer')).length,
-    'Dry pantry': items.filter(i => i.location?.toLowerCase().includes('pantry')).length,
+  const getLocationCount = (location: string) => {
+    if (location === 'All') return items.length
+    return items.filter(i => i.location === location).length
   }
 
   const expiredItems = items.filter(
@@ -103,27 +97,6 @@ export function DashboardPage() {
                 />
               </div>
               <div className="flex items-center gap-2">
-                {/* View Mode Selector */}
-                <div className="hidden md:flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setViewMode('adjust')}
-                    className={viewMode === 'adjust' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}
-                  >
-                    <Zap className="h-4 w-4 mr-2" />
-                    {t('pantry.quickAdjust')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setViewMode('manage')}
-                    className={viewMode === 'manage' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}
-                  >
-                    <Package className="h-4 w-4 mr-2" />
-                    {t('pantry.manage')}
-                  </Button>
-                </div>
                 {/* Desktop Add Button */}
                 <Button
                   onClick={handleAddClick}
@@ -140,36 +113,11 @@ export function DashboardPage() {
                     </span>
                   )}
                 </Button>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <SlidersHorizontal className="h-5 w-5" />
-                </Button>
               </div>
             </div>
 
             {/* Title - Mobile only */}
             <h1 className="text-3xl font-bold mb-4 md:hidden">{t('navigation.pantry')}</h1>
-            
-            {/* Mobile View Mode Toggle */}
-            <div className="md:hidden flex items-center gap-1 bg-gray-100 rounded-lg p-1 mb-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setViewMode('adjust')}
-                className={`flex-1 ${viewMode === 'adjust' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}`}
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                {t('pantry.quickAdjust')}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setViewMode('manage')}
-                className={`flex-1 ${viewMode === 'manage' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}`}
-              >
-                <Package className="h-4 w-4 mr-2" />
-                {t('pantry.manage')}
-              </Button>
-            </div>
 
             {/* Desktop Stats */}
             <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
@@ -200,23 +148,36 @@ export function DashboardPage() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide">
-              {(['All', 'Fridge', 'Freezer', 'Dry pantry'] as LocationFilter[]).map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                    activeFilter === filter
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {filter}
-                  <Badge variant="secondary" className={activeFilter === filter ? 'bg-emerald-600 hover:bg-emerald-600' : 'bg-gray-200'}>
-                    {locationCounts[filter]}
-                  </Badge>
-                </button>
-              ))}
+            <div className="relative -mx-4 md:mx-0">
+              <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide px-4 md:px-0 snap-x snap-mandatory scroll-smooth pb-1">
+                {availableFilters.map((filter) => {
+                  const translationKey = getLocationTranslationKey(filter)
+                  const displayName = filter === 'All' 
+                    ? t('pantry.all') 
+                    : translationKey 
+                      ? t(translationKey) 
+                      : filter
+                  
+                  return (
+                    <button
+                      key={filter}
+                      onClick={() => setActiveFilter(filter)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors snap-start flex-shrink-0 ${
+                        activeFilter === filter
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {displayName}
+                      <Badge variant="secondary" className={activeFilter === filter ? 'bg-emerald-600 hover:bg-emerald-600' : 'bg-gray-200'}>
+                        {getLocationCount(filter)}
+                      </Badge>
+                    </button>
+                  )
+                })}
+              </div>
+              {/* Scroll Fade Indicators */}
+              <div className="absolute top-0 right-0 h-full w-8 bg-gradient-to-l from-white to-transparent pointer-events-none md:hidden" />
             </div>
           </div>
         </div>
@@ -250,19 +211,11 @@ export function DashboardPage() {
             ) : (
               <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4 md:space-y-0">
                 {filteredItems.map((item) => (
-                  viewMode === 'adjust' ? (
-                    <PantryQuickAdjustCard
-                      key={item.id}
-                      item={item}
-                    />
-                  ) : (
-                    <PantryItemCard
-                      key={item.id}
-                      item={item}
-                      onDelete={handleDelete}
-                      onEdit={handleEdit}
-                    />
-                  )
+                  <PantryQuickAdjustCard
+                    key={item.id}
+                    item={item}
+                    onEdit={handleEdit}
+                  />
                 ))}
               </div>
             )}
