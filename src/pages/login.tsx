@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { ChefHat } from 'lucide-react'
+import { getSubdomain, getSubdomainUrl } from '@/lib/subdomain'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -26,7 +27,14 @@ export function LoginPage() {
         title: "Welcome back!",
         description: "You've successfully signed in.",
       })
-      navigate('/dashboard')
+      
+      // Redirect to app subdomain
+      const subdomain = getSubdomain()
+      if (subdomain === 'app') {
+        navigate('/dashboard')
+      } else {
+        window.location.href = getSubdomainUrl('app', '/dashboard')
+      }
     } catch (error) {
       toast({
         title: "Error",

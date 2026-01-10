@@ -17,15 +17,26 @@ export function getSubdomain(): Subdomain {
   const baseHostname = hostname.split(':')[0]
   const baseDomain = domainUrl.split(':')[0]
   
-  // Check if we're on localhost
-  if (baseHostname === 'localhost' || baseHostname === '127.0.0.1') {
-    // For local development, check query parameter or default to app
+  // Check if we're on localhost (including subdomains like app.localhost)
+  const isLocalhost = baseHostname === 'localhost' || 
+                      baseHostname === '127.0.0.1' || 
+                      baseHostname.endsWith('.localhost')
+  
+  if (isLocalhost) {
+    // For local development, check query parameter first
     const urlParams = new URLSearchParams(window.location.search)
     const subdomainParam = urlParams.get('subdomain')
     
     if (subdomainParam === 'root') return 'root'
     if (subdomainParam === 'platform') return 'platform'
-    return 'app'
+    if (subdomainParam === 'app') return 'app'
+    
+    // If no query param, check subdomain prefix (app.localhost, platform.localhost)
+    if (baseHostname === 'app.localhost' || baseHostname.startsWith('app.localhost')) return 'app'
+    if (baseHostname === 'platform.localhost' || baseHostname.startsWith('platform.localhost')) return 'platform'
+    
+    // Default to ROOT for plain localhost (changed from app)
+    return 'root'
   }
   
   // Production subdomain detection
@@ -49,26 +60,18 @@ export function getSubdomain(): Subdomain {
  * Get the URL for a specific subdomain
  */
 export function getSubdomainUrl(subdomain: Subdomain, path: string = '/'): string {
-  const domainUrl = import.meta.env.VITE_DOMAIN_URL || 'localhost:5173'
+  const rootDomain = import.meta.env.VITE_DOMAIN_URL || 'localhost:5173'
+  const appDomain = import.meta.env.VITE_APP_URL || 'app.localhost:5173'
+  const platformDomain = import.meta.env.VITE_PLATFORM_URL || 'platform.localhost:5173'
   const protocol = window.location.protocol
   
-  // For localhost, use query parameter
-  if (domainUrl.includes('localhost') || domainUrl.includes('127.0.0.1')) {
-    if (subdomain === 'root') {
-      return `${protocol}//${domainUrl}${path}?subdomain=root`
-    }
-    if (subdomain === 'platform') {
-      return `${protocol}//${domainUrl}${path}?subdomain=platform`
-    }
-    return `${protocol}//${domainUrl}${path}?subdomain=app`
-  }
+  // Get the appropriate domain for the subdomain
+  const targetDomain = subdomain === 'root' ? rootDomain : 
+                       subdomain === 'app' ? appDomain : 
+                       platformDomain
   
-  // Production URLs
-  if (subdomain === 'root') {
-    return `${protocol}//${domainUrl}${path}`
-  }
-  
-  return `${protocol}//${subdomain}.${domainUrl}${path}`
+  // Return the full URL with the configured domain
+  return `${protocol}//${targetDomain}${path}`
 }
 
 /**

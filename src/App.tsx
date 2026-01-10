@@ -73,6 +73,11 @@ function LandingRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      {/* Block all other routes - redirect to landing */}
+      <Route path="/dashboard" element={<Navigate to="/" replace />} />
+      <Route path="/shopping" element={<Navigate to="/" replace />} />
+      <Route path="/recipes" element={<Navigate to="/" replace />} />
+      <Route path="/settings" element={<Navigate to="/" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
