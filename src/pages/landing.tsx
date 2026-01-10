@@ -37,7 +37,7 @@ export function LandingPage() {
   ]
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
@@ -177,7 +177,7 @@ export function LandingPage() {
 
           <Card className="border-2 hover:shadow-lg transition-shadow">
             <CardHeader>
-              <ShoppingCart className="h-12 w-12 text-blue-500 mb-2" />
+              <ShoppingCart className="h-12 w-12 text-emerald-500 mb-2" />
               <CardTitle>{t('landing.shoppingLists')}</CardTitle>
               <CardDescription>
                 {t('landing.shoppingListsDesc')}
@@ -187,7 +187,7 @@ export function LandingPage() {
 
           <Card className="border-2 hover:shadow-lg transition-shadow">
             <CardHeader>
-              <Smartphone className="h-12 w-12 text-purple-500 mb-2" />
+              <Smartphone className="h-12 w-12 text-teal-500 mb-2" />
               <CardTitle>{t('landing.mobileFriendly')}</CardTitle>
               <CardDescription>
                 {t('landing.mobileFriendlyDesc')}
