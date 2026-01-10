@@ -242,17 +242,20 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
                     disabled={isAnalyzing}
                   />
                   <Button 
-                    variant="outline" 
-                    size="icon" 
+                    variant="outline"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isAnalyzing}
-                    title="Scan product with AI"
+                    className="gap-2"
                   >
                     {isAnalyzing ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <Camera className="h-5 w-5" />
                     )}
+                    <span className="hidden sm:inline">AI Scan</span>
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs px-1.5 py-0">
+                      AI
+                    </Badge>
                   </Button>
                 </>
               )}
