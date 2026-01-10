@@ -13,10 +13,10 @@ export function Navigation({ onAddClick }: NavigationProps) {
   const { signOut, user } = useAuthStore()
 
   const navItems = [
-    { path: '/dashboard', label: 'Pantry', icon: Package },
-    { path: '/shopping', label: 'Shopping', icon: ShoppingCart },
-    { path: '/recipes', label: 'Recipes', icon: UtensilsCrossed },
-    { path: '/settings', label: 'Settings', icon: Settings },
+    { path: '/app/dashboard', label: 'Pantry', icon: Package },
+    { path: '/app/shopping', label: 'Shopping', icon: ShoppingCart },
+    { path: '/app/recipes', label: 'Recipes', icon: UtensilsCrossed },
+    { path: '/app/settings', label: 'Settings', icon: Settings },
   ]
 
   return (

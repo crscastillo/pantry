@@ -14,7 +14,6 @@ import { PlatformDashboardPage } from '@/pages/platform-dashboard'
 import { PlatformSetupPage } from '@/pages/platform-setup'
 import { Toaster } from '@/components/ui/toaster'
 import { Package } from 'lucide-react'
-import { getSubdomain } from '@/lib/subdomain'
 
 const queryClient = new QueryClient()
 
@@ -50,6 +49,30 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function PlatformProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading, initialized } = useAuthStore()
+
+  // Show loading only during initial authentication check
+  if (!initialized) {
+    return <LoadingScreen />
+  }
+
+  // If we're still loading after initialization
+  if (loading) {
+    return <LoadingScreen />
+  }
+
+  // Check if user is platform owner
+  const rootUserEmail = import.meta.env.VITE_ROOT_USER_EMAIL
+  const isRootUser = user?.email === rootUserEmail && (user as any)?.is_platform_owner === true
+
+  if (!isRootUser) {
+    return <Navigate to="/platform/login" replace />
+  }
+
+  return <>{children}</>
+}
+
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, initialized } = useAuthStore()
 
@@ -63,27 +86,12 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
     return <LoadingScreen />
   }
 
-  // If user is authenticated, redirect to dashboard
+  // If user is authenticated, redirect to app dashboard
   if (user) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/app/dashboard" replace />
   }
 
   return <>{children}</>
-}
-
-// Landing page routes (root domain)
-function LandingRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      {/* Block all other routes - redirect to landing */}
-      <Route path="/dashboard" element={<Navigate to="/" replace />} />
-      <Route path="/shopping" element={<Navigate to="/" replace />} />
-      <Route path="/recipes" element={<Navigate to="/" replace />} />
-      <Route path="/settings" element={<Navigate to="/" replace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  )
 }
 
 // App routes (app subdomain)
@@ -96,7 +104,7 @@ function AppOnlyRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<LandingPage />} />
       <Route
         path="/login"
         element={
@@ -113,8 +121,10 @@ function AppOnlyRoutes() {
           </PublicRoute>
         }
       />
+      
+      {/* App Routes */}
       <Route
-        path="/dashboard"
+        path="/app/dashboard"
         element={
           <ProtectedRoute>
             <DashboardPage />
@@ -122,7 +132,7 @@ function AppOnlyRoutes() {
         }
       />
       <Route
-        path="/shopping"
+        path="/app/shopping"
         element={
           <ProtectedRoute>
             <ShoppingListPage />
@@ -130,7 +140,7 @@ function AppOnlyRoutes() {
         }
       />
       <Route
-        path="/recipes"
+        path="/app/recipes"
         element={
           <ProtectedRoute>
             <RecipesPage />
@@ -138,63 +148,35 @@ function AppOnlyRoutes() {
         }
       />
       <Route
-        path="/settings"
+        path="/app/settings"
         element={
           <ProtectedRoute>
             <SettingsPage />
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
-  )
-}
-
-// Platform routes (platform subdomain)
-function PlatformRoutes() {
-  const { initialize, user } = useAuthStore()
-
-  useEffect(() => {
-    initialize()
-  }, [initialize])
-
-  // Check if user is root user
-  const rootUserEmail = import.meta.env.VITE_ROOT_USER_EMAIL
-  const isRootUser = user?.email === rootUserEmail && (user as any)?.is_platform_owner === true
-
-  return (
-    <Routes>
-      <Route path="/setup" element={<PlatformSetupPage />} />
-      <Route path="/login" element={<PlatformLoginPage />} />
+      <Route path="/app" element={<Navigate to="/app/dashboard" replace />} />
+      
+      {/* Platform Routes */}
+      <Route path="/platform/setup" element={<PlatformSetupPage />} />
+      <Route path="/platform/login" element={<PlatformLoginPage />} />
       <Route
-        path="/dashboard"
+        path="/platform/dashboard"
         element={
-          isRootUser ? (
+          <PlatformProtectedRoute>
             <PlatformDashboardPage />
-          ) : (
-            <Navigate to="/login" replace />
-          )
+          </PlatformProtectedRoute>
         }
       />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/platform" element={<Navigate to="/platform/dashboard" replace />} />
+      
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
 
 // Main routing component that determines which routes to show based on subdomain
 function AppRoutes() {
-  const subdomain = getSubdomain()
-
-  if (subdomain === 'root') {
-    return <LandingRoutes />
-  }
-
-  if (subdomain === 'platform') {
-    return <PlatformRoutes />
-  }
-
-  // Default to app routes
   return <AppOnlyRoutes />
 }
 

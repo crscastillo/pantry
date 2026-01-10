@@ -34,7 +34,7 @@ export function PlatformSetupPage() {
 
       if (data) {
         // Setup already complete, redirect to login
-        navigate('/login')
+        navigate('/platform/login')
       }
     } catch (error) {
       // User doesn't exist, continue with setup
@@ -68,8 +68,7 @@ export function PlatformSetupPage() {
 
     try {
       // Create the platform owner account
-      const platformUrl = import.meta.env.VITE_PLATFORM_URL
-      const redirectUrl = `${window.location.protocol}//${platformUrl}/login`
+      const redirectUrl = `${window.location.origin}/platform/login`
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: rootUserEmail,
         password: password,
@@ -106,7 +105,7 @@ export function PlatformSetupPage() {
 
       // Sign out and redirect to login
       await supabase.auth.signOut()
-      setTimeout(() => navigate('/login'), 2000)
+      setTimeout(() => navigate('/platform/login'), 2000)
     } catch (error) {
       toast({
         title: "Error",

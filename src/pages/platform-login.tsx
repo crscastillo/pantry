@@ -54,7 +54,7 @@ export function PlatformLoginPage() {
     }
 
     // Redirect to setup
-    navigate('/setup')
+    navigate('/platform/setup')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,7 +79,7 @@ export function PlatformLoginPage() {
         title: "Welcome to Platform",
         description: "Access granted.",
       })
-      navigate('/dashboard')
+      navigate('/platform/dashboard')
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to sign in"
       

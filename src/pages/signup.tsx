@@ -22,8 +22,7 @@ export function SignupPage() {
     setLoading(true)
 
     try {
-      const appUrl = import.meta.env.VITE_APP_URL
-      const redirectUrl = `${window.location.protocol}//${appUrl}/login`
+      const redirectUrl = `${window.location.origin}/login`
       await signUp(email, password, fullName, redirectUrl)
       toast({
         title: "Account created!",
