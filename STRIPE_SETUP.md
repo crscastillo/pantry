@@ -18,6 +18,7 @@ This guide will help you set up Stripe for handling subscription payments in you
 
 ### Create Pro Monthly Subscription
 
+
 1. Go to **Products** in Stripe Dashboard
 2. Click **+ Add product**
 3. Fill in:
