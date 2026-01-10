@@ -45,10 +45,6 @@ export function SettingsPage() {
     }
   }
 
-  const handleAddClick = () => {
-    setShowAddDialog(true)
-  }
-
   const handleLanguageChange = async (language: string) => {
     if (!user?.id) {
       toast({
@@ -82,7 +78,7 @@ export function SettingsPage() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Navigation onAddClick={handleAddClick} />
+      <Navigation />
 
       <div className="flex-1 md:ml-64 flex flex-col overflow-hidden w-full">
         {/* Header */}

@@ -18,7 +18,7 @@ export default function RecipesPage() {
   return (
     <div className="flex h-screen bg-gray-50 overflow-x-hidden">
       {/* Responsive Navigation */}
-      <Navigation onAddClick={handleAddClick} />
+      <Navigation />
 
       {/* Main Content */}
       <div className="flex-1 md:ml-64 flex flex-col overflow-x-hidden w-full">

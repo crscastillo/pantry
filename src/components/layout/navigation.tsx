@@ -1,14 +1,10 @@
-import { Package, ShoppingCart, UtensilsCrossed, LogOut, Settings, Plus } from 'lucide-react'
+import { Package, ShoppingCart, UtensilsCrossed, LogOut, Settings } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/button'
 
-interface NavigationProps {
-  onAddClick: () => void
-}
-
-export function Navigation({ onAddClick }: NavigationProps) {
+export function Navigation() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
