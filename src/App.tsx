@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuthStore } from '@/store/auth'
 import { useUserSettings } from '@/hooks/use-user-settings'
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh'
 import { LandingPage } from '@/pages/landing'
 import { LoginPage } from '@/pages/login'
 import { SignupPage } from '@/pages/signup'
@@ -14,6 +15,7 @@ import { PlatformLoginPage } from '@/pages/platform-login'
 import { PlatformDashboardPage } from '@/pages/platform-dashboard'
 import { PlatformSetupPage } from '@/pages/platform-setup'
 import { Toaster } from '@/components/ui/toaster'
+import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh-indicator'
 import { Package } from 'lucide-react'
 
 const queryClient = new QueryClient()
@@ -185,9 +187,23 @@ function AppRoutes() {
 }
 
 function App() {
+  const { isRefreshing, indicatorRef, isEnabled } = usePullToRefresh({
+    onRefresh: async () => {
+      // Reload the page after a brief delay to show the refresh animation
+      await new Promise(resolve => setTimeout(resolve, 300))
+      window.location.reload()
+    }
+  })
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        {isEnabled && (
+          <PullToRefreshIndicator
+            isRefreshing={isRefreshing}
+            indicatorRef={indicatorRef}
+          />
+        )}
         <AppRoutes />
         <Toaster />
       </BrowserRouter>
