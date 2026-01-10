@@ -87,6 +87,12 @@ export function DashboardPage() {
         {/* Mobile & Desktop Header */}
         <div className="bg-white border-b sticky top-0 z-10 overflow-x-hidden">
           <div className="px-4 md:px-6 lg:px-8 py-4">
+            {/* Title */}
+            <div className="flex items-center gap-3 mb-4">
+              <Package className="h-8 w-8 text-emerald-500" />
+              <h1 className="text-2xl md:text-3xl font-bold">{t('navigation.pantry')}</h1>
+            </div>
+
             {/* Search and Actions */}
             <div className="flex items-center gap-2 sm:gap-3 mb-4 md:mb-6">
               <div className="relative flex-1 max-w-md">
@@ -135,7 +141,7 @@ export function DashboardPage() {
             </div>
 
             {/* Title - Mobile only */}
-            <h1 className="text-3xl font-bold mb-4 md:hidden">{t('navigation.pantry')}</h1>
+            <h1 className="text-3xl font-bold mb-4 md:hidden hidden">{t('navigation.pantry')}</h1>
 
             {/* Desktop Stats */}
             <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
