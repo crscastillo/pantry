@@ -22,7 +22,8 @@
     "db:seed": "supabase seed",
     "db:types": "supabase gen types typescript --local > src/lib/types/database-generated.ts",
     "db:link": "supabase link",
-    "db:deploy": "supabase db push --linked"
+    "db:deploy": "supabase db push --linked",
+    "email:template": "./scripts/update-email-template.sh"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.0.5",
