@@ -140,11 +140,11 @@ export function SettingsPage() {
 
                 {loadingTiers ? (
                   <div className="text-center py-12">
-                    <p className="text-gray-500">Loading subscription plans...</p>
+                    <p className="text-gray-500">{t('settings.loadingPlans')}</p>
                   </div>
                 ) : tiers.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-gray-500">No subscription plans available</p>
+                    <p className="text-gray-500">{t('settings.noPlansAvailable')}</p>
                   </div>
                 ) : (
                   <div className="grid md:grid-cols-3 gap-6">
@@ -173,7 +173,7 @@ export function SettingsPage() {
                             <Badge className={`absolute -top-3 left-1/2 transform -translate-x-1/2 ${
                               isCurrentTier ? 'bg-emerald-500' : 'bg-amber-500'
                             }`}>
-                              {isCurrentTier ? 'Current Plan' : 'Best Value'}
+                              {isCurrentTier ? t('settings.currentPlanBadge') : t('settings.bestValue')}
                             </Badge>
                           )}
                           <CardHeader>
@@ -185,12 +185,10 @@ export function SettingsPage() {
                               {!isFree && <Crown className="h-4 w-4 text-amber-500" />}
                             </CardTitle>
                             <CardDescription>
-                              {isFree ? 'Perfect for getting started' : 
-                               isYearly ? 'Coming soon' : 
-                               'Coming soon'}
+                              {isFree ? t('settings.perfectForStarting') : t('settings.comingSoon')}
                             </CardDescription>
                             <div className="mt-4">
-                              <span className="text-2xl font-medium text-gray-400">Coming Soon</span>
+                              <span className="text-2xl font-medium text-gray-400">{t('settings.comingSoon')}</span>
                             </div>
                           </CardHeader>
                           <CardContent>
@@ -206,14 +204,14 @@ export function SettingsPage() {
                             </ul>
                             {isCurrentTier ? (
                               <Button disabled className="w-full">
-                                Current Plan
+                                {t('settings.currentPlanBadge')}
                               </Button>
                             ) : (
                               <Button
                                 disabled
                                 className="w-full"
                               >
-                                Coming Soon
+                                {t('settings.comingSoon')}
                               </Button>
                             )}
                           </CardContent>
@@ -226,41 +224,41 @@ export function SettingsPage() {
                 {/* Features Comparison */}
                 <Card className="mt-8">
                   <CardHeader>
-                    <CardTitle>Feature Comparison</CardTitle>
+                    <CardTitle>{t('settings.featureComparison')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b">
-                            <th className="text-left py-3 px-4">Feature</th>
-                            <th className="text-center py-3 px-4">Free</th>
-                            <th className="text-center py-3 px-4">Pro</th>
+                            <th className="text-left py-3 px-4">{t('settings.feature')}</th>
+                            <th className="text-center py-3 px-4">{t('settings.free')}</th>
+                            <th className="text-center py-3 px-4">{t('settings.pro')}</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr className="border-b">
-                            <td className="py-3 px-4">Pantry Items</td>
+                            <td className="py-3 px-4">{t('settings.pantryItems')}</td>
                             <td className="text-center py-3 px-4">50</td>
-                            <td className="text-center py-3 px-4">Unlimited</td>
+                            <td className="text-center py-3 px-4">{t('settings.unlimited')}</td>
                           </tr>
                           <tr className="border-b">
-                            <td className="py-3 px-4">AI Photo Scans</td>
-                            <td className="text-center py-3 px-4">5/month</td>
-                            <td className="text-center py-3 px-4">Unlimited</td>
+                            <td className="py-3 px-4">{t('settings.aiPhotoScans')}</td>
+                            <td className="text-center py-3 px-4">5{t('settings.perMonth')}</td>
+                            <td className="text-center py-3 px-4">{t('settings.unlimited')}</td>
                           </tr>
                           <tr className="border-b">
-                            <td className="py-3 px-4">Shopping List</td>
+                            <td className="py-3 px-4">{t('settings.shoppingList')}</td>
                             <td className="text-center py-3 px-4"><Check className="h-5 w-5 text-emerald-500 mx-auto" /></td>
                             <td className="text-center py-3 px-4"><Check className="h-5 w-5 text-emerald-500 mx-auto" /></td>
                           </tr>
                           <tr className="border-b">
-                            <td className="py-3 px-4">Expiry Reminders</td>
+                            <td className="py-3 px-4">{t('settings.expiryReminders')}</td>
                             <td className="text-center py-3 px-4">-</td>
                             <td className="text-center py-3 px-4"><Check className="h-5 w-5 text-emerald-500 mx-auto" /></td>
                           </tr>
                           <tr>
-                            <td className="py-3 px-4">AI Recipe Suggestions</td>
+                            <td className="py-3 px-4">{t('settings.aiRecipeSuggestions')}</td>
                             <td className="text-center py-3 px-4">-</td>
                             <td className="text-center py-3 px-4"><Check className="h-5 w-5 text-emerald-500 mx-auto" /></td>
                           </tr>
@@ -274,40 +272,40 @@ export function SettingsPage() {
               <TabsContent value="profile" className="space-y-6 mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Account Settings</CardTitle>
-                    <CardDescription>Manage your account preferences</CardDescription>
+                    <CardTitle>{t('settings.accountSettings')}</CardTitle>
+                    <CardDescription>{t('settings.manageAccountPreferences')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between py-3 border-b">
                       <div>
-                        <p className="font-medium">Email</p>
+                        <p className="font-medium">{t('settings.email')}</p>
                         <p className="text-sm text-gray-500">{user?.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between py-3 border-b">
                       <div>
-                        <p className="font-medium">Notifications</p>
-                        <p className="text-sm text-gray-500">Receive expiry reminders</p>
+                        <p className="font-medium">{t('settings.notifications')}</p>
+                        <p className="text-sm text-gray-500">{t('settings.receiveExpiryReminders')}</p>
                       </div>
-                      <Button variant="outline" size="sm">Configure</Button>
+                      <Button variant="outline" size="sm">{t('settings.configure')}</Button>
                     </div>
                     <div className="flex items-center justify-between py-3">
                       <div>
-                        <p className="font-medium">Data Export</p>
-                        <p className="text-sm text-gray-500">Download your pantry data</p>
+                        <p className="font-medium">{t('settings.dataExport')}</p>
+                        <p className="text-sm text-gray-500">{t('settings.downloadPantryData')}</p>
                       </div>
-                      <Button variant="outline" size="sm">Export</Button>
+                      <Button variant="outline" size="sm">{t('settings.export')}</Button>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Danger Zone</CardTitle>
-                    <CardDescription>Irreversible actions</CardDescription>
+                    <CardTitle>{t('settings.dangerZone')}</CardTitle>
+                    <CardDescription>{t('settings.irreversibleActions')}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button variant="destructive">Delete Account</Button>
+                    <Button variant="destructive">{t('settings.deleteAccount')}</Button>
                   </CardContent>
                 </Card>
               </TabsContent>

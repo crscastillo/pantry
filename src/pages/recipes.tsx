@@ -1,12 +1,8 @@
 import { useState } from 'react'
-import { Plus, Search, ChefHat, UtensilsCrossed } from 'lucide-react'
+import { ChefHat, UtensilsCrossed } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useRecipes } from '@/hooks/use-recipes'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Navigation } from '@/components/layout/navigation'
 import { AddItemDialog } from '@/components/pantry/add-item-dialog'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Recipe } from '@/types/recipe'
 
 const RecipeCard = ({ recipe }: { recipe: Recipe }) => {
@@ -70,21 +66,15 @@ const RecipeCard = ({ recipe }: { recipe: Recipe }) => {
 
 export default function RecipesPage() {
   const { t } = useTranslation()
-  const [searchTerm, setSearchTerm] = useState('')
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const { data: recipes, isLoading } = useRecipes()
+  
+  // Recipes feature is not ready yet - disable API calls
+  const isLoading = false
+  const recipes: Recipe[] = []
 
   const handleAddClick = () => {
     setShowAddDialog(true)
   }
-
-  const filteredRecipes = recipes?.filter((recipe) =>
-    recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const totalRecipes = recipes?.length || 0
-  const favoriteRecipes = recipes?.filter(r => r.cuisine === 'Italian').length || 0
-  const recentRecipes = recipes?.slice(0, 3).length || 0
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-x-hidden">
@@ -96,64 +86,10 @@ export default function RecipesPage() {
         {/* Header */}
         <div className="bg-white border-b sticky top-0 z-10 overflow-x-hidden">
           <div className="px-4 md:px-6 lg:px-8 py-4">
-            {/* Title and Search */}
+            {/* Title */}
             <div className="flex items-center gap-3 mb-4">
               <UtensilsCrossed className="h-8 w-8 text-emerald-500" />
               <h1 className="text-2xl md:text-3xl font-bold">{t('navigation.recipes')}</h1>
-            </div>
-
-            {/* Search */}
-            <div className="flex items-center gap-2 sm:gap-3 mb-4">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search recipes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-gray-50 border-0"
-                />
-              </div>
-              <Button
-                onClick={handleAddClick}
-                className="hidden md:flex bg-emerald-500 hover:bg-emerald-600"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Recipe
-              </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 md:gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium text-gray-600">
-                    Total Recipes
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl md:text-2xl font-bold">{totalRecipes}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium text-gray-600">
-                    Favorites
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl md:text-2xl font-bold text-amber-600">{favoriteRecipes}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium text-gray-600">
-                    Recent
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl md:text-2xl font-bold text-emerald-600">{recentRecipes}</div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>
@@ -161,45 +97,24 @@ export default function RecipesPage() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 pb-24 md:pb-6">
-            {/* Loading State */}
-            {isLoading && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">Loading recipes...</p>
+            {/* Coming Soon Placeholder */}
+            <div className="text-center py-20">
+              <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-100 mb-6">
+                <ChefHat className="h-12 w-12 text-emerald-600" />
               </div>
-            )}
-
-            {/* Empty State */}
-            {!isLoading && totalRecipes === 0 && (
-              <div className="text-center py-12 bg-white rounded-xl">
-                <ChefHat className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No recipes yet</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Start building your recipe collection by adding your first recipe
-                </p>
-              </div>
-            )}
-
-            {/* Recipe Grid */}
-            {!isLoading && filteredRecipes && filteredRecipes.length > 0 && (
-              <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:space-y-0">
-                {filteredRecipes.map((recipe) => (
-                  <RecipeCard key={recipe.id} recipe={recipe} />
-                ))}
-              </div>
-            )}
-
-            {/* No Search Results */}
-            {!isLoading &&
-              recipes &&
-              recipes.length > 0 &&
-              filteredRecipes &&
-              filteredRecipes.length === 0 && (
-                <div className="text-center py-12 bg-white rounded-xl">
-                  <Search className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No recipes found</h3>
-                  <p className="text-sm text-gray-500">Try a different search term</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                {t('pantry.comingSoon')}
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+                Recipe management feature is currently under development. Check back soon!
+              </p>
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                  <span>In Development</span>
                 </div>
-              )}
+              </div>
+            </div>
           </div>
         </main>
       </div>
