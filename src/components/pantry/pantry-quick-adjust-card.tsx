@@ -124,7 +124,7 @@ export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardPro
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-                    Stocked ({item.quantity}/{item.expected_amount})
+                    {t('pantry.stocked')} ({item.quantity}/{item.expected_amount})
                   </Badge>
                 )}
               </div>

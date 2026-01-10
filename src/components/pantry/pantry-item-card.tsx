@@ -119,7 +119,7 @@ export function PantryItemCard({ item, onDelete, onEdit }: PantryItemCardProps) 
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-                    Stocked
+                    {t('pantry.stocked')}
                   </Badge>
                 )}
               </div>

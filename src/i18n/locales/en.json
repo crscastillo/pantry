@@ -54,6 +54,7 @@
     "notes": "Notes",
     "notesPlaceholder": "Any additional information...",
     "lowStock": "Low Stock",
+    "stocked": "Stocked",
     "expiringSoon": "Expiring Soon",
     "expired": "Expired",
     "deleteConfirm": "Are you sure you want to delete this item?",
