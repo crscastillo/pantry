@@ -84,7 +84,7 @@ export function DashboardPage() {
       <div className="flex-1 md:ml-64 flex flex-col overflow-x-hidden w-full">
         {/* Mobile & Desktop Header */}
         <div className="bg-white border-b sticky top-0 z-10 overflow-x-hidden">
-          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4">
+          <div className="px-4 md:px-6 lg:px-8 py-4">
             {/* Search and Actions */}
             <div className="flex items-center gap-2 sm:gap-3 mb-4 md:mb-6">
               <div className="relative flex-1 max-w-md">

@@ -62,7 +62,7 @@ export function ShoppingListPage() {
       <div className="flex-1 md:ml-64 flex flex-col overflow-x-hidden w-full">
         {/* Header */}
         <div className="bg-white border-b sticky top-0 z-10 overflow-x-hidden">
-          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4">
+          <div className="px-4 md:px-6 lg:px-8 py-4">
             {/* Title and Search */}
             <div className="flex items-center gap-3 mb-4">
               <ShoppingCart className="h-8 w-8 text-emerald-500" />

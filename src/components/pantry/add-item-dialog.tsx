@@ -387,25 +387,27 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
             </Badge>
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-3 pt-2">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <div className="text-xs text-gray-600 font-medium mb-1">{t('pantry.inPantry')}</div>
-              <div className="font-semibold text-gray-900">
-                {editingItem ? `${Math.floor((new Date().getTime() - new Date(editingItem.created_at).getTime()) / (1000 * 60 * 60 * 24))} ${t('pantry.days')}` : t('pantry.new')}
+          {/* Quick Stats - Only show when editing */}
+          {editingItem && (
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                <div className="text-xs text-gray-600 font-medium mb-1">{t('pantry.inPantry')}</div>
+                <div className="font-semibold text-gray-900">
+                  {Math.floor((new Date().getTime() - new Date(editingItem.created_at).getTime()) / (1000 * 60 * 60 * 24))} {t('pantry.days')}
+                </div>
+              </div>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <div className="text-xs text-orange-700 font-medium mb-1">{t('pantry.expiring')}</div>
+                <div className="font-semibold text-orange-600">
+                  {formData.expiry_date ? `${t('pantry.in')} ${Math.floor((new Date(formData.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} ${t('pantry.days')}` : t('pantry.notSet')}
+                </div>
+              </div>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                <div className="text-xs text-emerald-700 font-medium mb-1">{t('pantry.amount')}</div>
+                <div className="font-semibold text-emerald-900">{formData.quantity} {t(getUnitTranslationKey(formData.unit))}</div>
               </div>
             </div>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-              <div className="text-xs text-orange-700 font-medium mb-1">{t('pantry.expiring')}</div>
-              <div className="font-semibold text-orange-600">
-                {formData.expiry_date ? `${t('pantry.in')} ${Math.floor((new Date(formData.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} ${t('pantry.days')}` : t('pantry.notSet')}
-              </div>
-            </div>
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-              <div className="text-xs text-emerald-700 font-medium mb-1">{t('pantry.amount')}</div>
-              <div className="font-semibold text-emerald-900">{formData.quantity} {t(getUnitTranslationKey(formData.unit))}</div>
-            </div>
-          </div>
+          )}
 
           {/* Form Fields */}
           <div className="space-y-5">

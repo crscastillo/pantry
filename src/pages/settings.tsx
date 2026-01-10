@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuthStore } from '@/store/auth'
 import { Settings as SettingsIcon, Check, Zap, Sparkles, Crown, Camera, Languages } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { getSubscriptionTiers, createCheckoutSession } from '@/lib/subscription'
+import { getSubscriptionTiers } from '@/lib/subscription'
 import { updateUserLanguage } from '@/lib/user-settings'
 import type { SubscriptionTier } from '@/types/subscription'
 
@@ -20,7 +20,6 @@ export function SettingsPage() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const { user } = useAuthStore()
   const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(false)
   const [tiers, setTiers] = useState<SubscriptionTier[]>([])
   const [loadingTiers, setLoadingTiers] = useState(true)
   
@@ -48,30 +47,6 @@ export function SettingsPage() {
 
   const handleAddClick = () => {
     setShowAddDialog(true)
-  }
-
-  const handleSubscribe = async (tierId: string) => {
-    if (!user?.id) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to subscribe",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      await createCheckoutSession(tierId, user.id)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to start checkout process",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
   }
 
   const handleLanguageChange = async (language: string) => {
@@ -211,18 +186,12 @@ export function SettingsPage() {
                             </CardTitle>
                             <CardDescription>
                               {isFree ? 'Perfect for getting started' : 
-                               isYearly ? 'Save 17% with annual billing' : 
-                               'For power users'}
+                               isYearly ? 'Coming soon' : 
+                               'Coming soon'}
                             </CardDescription>
                             <div className="mt-4">
-                              <span className="text-4xl font-bold">${tier.price}</span>
-                              <span className="text-gray-500">/{tier.interval}</span>
+                              <span className="text-2xl font-medium text-gray-400">Coming Soon</span>
                             </div>
-                            {isYearly && tier.price > 0 && (
-                              <p className="text-sm text-emerald-600 font-medium mt-1">
-                                Save $15/year
-                              </p>
-                            )}
                           </CardHeader>
                           <CardContent>
                             <ul className="space-y-3 mb-6">
@@ -239,28 +208,12 @@ export function SettingsPage() {
                               <Button disabled className="w-full">
                                 Current Plan
                               </Button>
-                            ) : isFree ? (
-                              <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => handleSubscribe(tier.id)}
-                                disabled={isLoading}
-                              >
-                                Downgrade
-                              </Button>
                             ) : (
                               <Button
-                                className={`w-full ${
-                                  isYearly 
-                                    ? 'bg-amber-500 hover:bg-amber-600' 
-                                    : 'bg-emerald-500 hover:bg-emerald-600'
-                                }`}
-                                onClick={() => handleSubscribe(tier.id)}
-                                disabled={isLoading || !tier.stripe_price_id}
+                                disabled
+                                className="w-full"
                               >
-                                {isLoading ? 'Loading...' : 
-                                 !tier.stripe_price_id ? 'Coming Soon' :
-                                 'Upgrade to Pro'}
+                                Coming Soon
                               </Button>
                             )}
                           </CardContent>
