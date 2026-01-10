@@ -13,7 +13,7 @@ export function SignupPage() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signUp, signInWithProvider } = useAuthStore()
+  const { signUp } = useAuthStore()
   const navigate = useNavigate()
   const { toast } = useToast()
 
@@ -36,20 +36,6 @@ export function SignupPage() {
         variant: "destructive",
       })
     } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSocialSignIn = async (provider: 'google' | 'facebook') => {
-    setLoading(true)
-    try {
-      await signInWithProvider(provider)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : `Failed to sign in with ${provider}`,
-        variant: "destructive",
-      })
       setLoading(false)
     }
   }
