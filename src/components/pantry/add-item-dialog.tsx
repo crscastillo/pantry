@@ -48,6 +48,14 @@ const units: PantryUnit[] = [
   'bottle',
 ]
 
+const locations = [
+  'Fridge',
+  'Freezer',
+  'Dry Pantry',
+  'Cupboard',
+  'Counter',
+]
+
 export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialogProps) {
   const { t } = useTranslation()
   const [formData, setFormData] = useState({
@@ -64,6 +72,9 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
 
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false)
+  const [filteredLocations, setFilteredLocations] = useState<string[]>([])
+  const locationInputRef = useRef<HTMLInputElement>(null)
 
   const addMutation = useAddPantryItem()
   const updateMutation = useUpdatePantryItem()
@@ -195,6 +206,17 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
     return `pantry.units.${unit}`
   }
 
+  const getLocationTranslationKey = (location: string) => {
+    const keyMap: Record<string, string> = {
+      'Fridge': 'pantry.locations.fridge',
+      'Freezer': 'pantry.locations.freezer',
+      'Dry Pantry': 'pantry.locations.dryPantry',
+      'Cupboard': 'pantry.locations.cupboard',
+      'Counter': 'pantry.locations.counter',
+    }
+    return keyMap[location] || location
+  }
+
   const handleImageCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -240,6 +262,27 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
         fileInputRef.current.value = ''
       }
     }
+  }
+
+  const handleLocationChange = (value: string) => {
+    setFormData({ ...formData, location: value })
+    
+    if (value) {
+      const filtered = locations.filter(loc => 
+        t(getLocationTranslationKey(loc)).toLowerCase().includes(value.toLowerCase()) ||
+        loc.toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredLocations(filtered)
+      setShowLocationSuggestions(filtered.length > 0)
+    } else {
+      setFilteredLocations([])
+      setShowLocationSuggestions(false)
+    }
+  }
+
+  const handleLocationSelect = (location: string) => {
+    setFormData({ ...formData, location })
+    setShowLocationSuggestions(false)
   }
 
   return (
@@ -368,12 +411,41 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="location">{t('pantry.location')}</Label>
-                  <Input
-                    id="location"
-                    placeholder={t('pantry.locationPlaceholder')}
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
+                  <div className="relative">
+                    <Input
+                      ref={locationInputRef}
+                      id="location"
+                      placeholder={t('pantry.locationPlaceholder')}
+                      value={formData.location}
+                      onChange={(e) => handleLocationChange(e.target.value)}
+                      onFocus={() => {
+                        if (formData.location) {
+                          handleLocationChange(formData.location)
+                        } else {
+                          setFilteredLocations(locations)
+                          setShowLocationSuggestions(true)
+                        }
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setShowLocationSuggestions(false), 200)
+                      }}
+                      autoComplete="off"
+                    />
+                    {showLocationSuggestions && filteredLocations.length > 0 && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                        {filteredLocations.map((loc) => (
+                          <button
+                            key={loc}
+                            type="button"
+                            className="w-full px-3 py-2 text-left hover:bg-gray-100 text-sm"
+                            onClick={() => handleLocationSelect(loc)}
+                          >
+                            {t(getLocationTranslationKey(loc))}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

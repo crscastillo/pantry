@@ -48,7 +48,7 @@
     "unit": "Unidad",
     "category": "Categoría",
     "location": "Ubicación",
-    "locationPlaceholder": "Nevera, Congelador...",
+    "locationPlaceholder": "Escribe o selecciona ubicación...",
     "purchaseDate": "Fecha de Compra",
     "expiryDate": "Fecha de Vencimiento",
     "notes": "Notas",
@@ -123,6 +123,13 @@
       "package": "paquete",
       "can": "lata",
       "bottle": "botella"
+    },
+    "locations": {
+      "fridge": "Nevera",
+      "freezer": "Congelador",
+      "dryPantry": "Despensa Seca",
+      "cupboard": "Alacena",
+      "counter": "Mostrador"
     }
   },
   "recipes": {

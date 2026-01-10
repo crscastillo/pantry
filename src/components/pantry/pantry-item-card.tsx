@@ -45,6 +45,10 @@ const getCategoryEmoji = (category: string) => {
   return emojiMap[category] || '📦'
 }
 
+const getUnitTranslationKey = (unit: string) => {
+  return `pantry.units.${unit}`
+}
+
 export function PantryItemCard({ item, onDelete, onEdit }: PantryItemCardProps) {
   const { t } = useTranslation()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -81,7 +85,7 @@ export function PantryItemCard({ item, onDelete, onEdit }: PantryItemCardProps) 
             <div className="flex items-start justify-between gap-2 mb-1">
               <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
               <div className="flex-shrink-0 text-right">
-                <div className="text-sm font-medium text-gray-900">{item.quantity} {item.unit}</div>
+                <div className="text-sm font-medium text-gray-900">{item.quantity} {t(getUnitTranslationKey(item.unit))}</div>
                 {item.location && (
                   <div className="text-xs text-gray-500">{item.location}</div>
                 )}
@@ -153,13 +157,13 @@ export function PantryItemCard({ item, onDelete, onEdit }: PantryItemCardProps) 
             <div className="space-y-3">
               <div className="flex justify-between items-center py-2 border-b">
                 <span className="text-sm text-gray-500">Quantity</span>
-                <span className="font-medium">{item.quantity} {item.unit}</span>
+                <span className="font-medium">{item.quantity} {t(getUnitTranslationKey(item.unit))}</span>
               </div>
               
               {item.expected_amount && (
                 <div className="flex justify-between items-center py-2 border-b">
                   <span className="text-sm text-gray-500">Expected Amount</span>
-                  <span className="font-medium">{item.expected_amount} {item.unit}</span>
+                  <span className="font-medium">{item.expected_amount} {t(getUnitTranslationKey(item.unit))}</span>
                 </div>
               )}
 

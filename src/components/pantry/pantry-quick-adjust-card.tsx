@@ -36,6 +36,10 @@ const getCategoryEmoji = (category: string) => {
   return emojiMap[category] || '📦'
 }
 
+const getUnitTranslationKey = (unit: string) => {
+  return `pantry.units.${unit}`
+}
+
 export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardProps) {
   const { t } = useTranslation()
   const { toast } = useToast()
@@ -158,7 +162,7 @@ export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardPro
                 <div className="text-xl font-bold text-gray-900">
                   {item.quantity}
                 </div>
-                <div className="text-xs text-gray-500">{item.unit}</div>
+                <div className="text-xs text-gray-500">{t(getUnitTranslationKey(item.unit))}</div>
               </div>
               
               <Button
@@ -194,13 +198,13 @@ export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardPro
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b">
                   <span className="text-sm text-gray-500">Quantity</span>
-                  <span className="font-medium">{item.quantity} {item.unit}</span>
+                  <span className="font-medium">{item.quantity} {t(getUnitTranslationKey(item.unit))}</span>
                 </div>
                 
                 {item.expected_amount && (
                   <div className="flex justify-between items-center py-2 border-b">
                     <span className="text-sm text-gray-500">Expected Amount</span>
-                    <span className="font-medium">{item.expected_amount} {item.unit}</span>
+                    <span className="font-medium">{item.expected_amount} {t(getUnitTranslationKey(item.unit))}</span>
                   </div>
                 )}
 

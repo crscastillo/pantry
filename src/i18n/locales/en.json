@@ -48,7 +48,7 @@
     "unit": "Unit",
     "category": "Category",
     "location": "Location",
-    "locationPlaceholder": "Fridge, Freezer...",
+    "locationPlaceholder": "Type or select location...",
     "purchaseDate": "Purchase Date",
     "expiryDate": "Expiry Date",
     "notes": "Notes",
@@ -123,6 +123,13 @@
       "package": "package",
       "can": "can",
       "bottle": "bottle"
+    },
+    "locations": {
+      "fridge": "Fridge",
+      "freezer": "Freezer",
+      "dryPantry": "Dry Pantry",
+      "cupboard": "Cupboard",
+      "counter": "Counter"
     }
   },
   "recipes": {

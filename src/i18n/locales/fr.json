@@ -48,7 +48,7 @@
     "unit": "Unité",
     "category": "Catégorie",
     "location": "Emplacement",
-    "locationPlaceholder": "Réfrigérateur, Congélateur...",
+    "locationPlaceholder": "Saisir ou sélectionner l'emplacement...",
     "purchaseDate": "Date d'Achat",
     "expiryDate": "Date d'Expiration",
     "notes": "Notes",
@@ -123,6 +123,13 @@
       "package": "paquet",
       "can": "boîte",
       "bottle": "bouteille"
+    },
+    "locations": {
+      "fridge": "Réfrigérateur",
+      "freezer": "Congélateur",
+      "dryPantry": "Garde-Manger Sec",
+      "cupboard": "Placard",
+      "counter": "Comptoir"
     }
   },
   "recipes": {
