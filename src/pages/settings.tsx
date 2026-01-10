@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigation } from '@/components/layout/navigation'
 import { AddItemDialog } from '@/components/pantry/add-item-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuthStore } from '@/store/auth'
-import { Settings as SettingsIcon, Check, Zap, Sparkles, Crown, Camera } from 'lucide-react'
+import { Settings as SettingsIcon, Check, Zap, Sparkles, Crown, Camera, Languages } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { getSubscriptionTiers, createCheckoutSession } from '@/lib/subscription'
 import type { SubscriptionTier } from '@/types/subscription'
 
 export function SettingsPage() {
+  const { t, i18n } = useTranslation()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const { user } = useAuthStore()
   const { toast } = useToast()
@@ -69,6 +73,15 @@ export function SettingsPage() {
     }
   }
 
+  const handleLanguageChange = (language: string) => {
+    i18n.changeLanguage(language)
+    localStorage.setItem('language', language)
+    toast({
+      title: t('settings.languageUpdated'),
+      description: `Language changed to ${language.toUpperCase()}`,
+    })
+  }
+
   return (
     <div className="flex h-screen bg-gray-50">
       <Navigation onAddClick={handleAddClick} />
@@ -79,7 +92,7 @@ export function SettingsPage() {
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4">
             <div className="flex items-center gap-3">
               <SettingsIcon className="h-8 w-8 text-emerald-500" />
-              <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">{t('settings.title')}</h1>
             </div>
           </div>
         </div>
@@ -88,15 +101,43 @@ export function SettingsPage() {
         <main className="flex-1 overflow-y-auto pb-24 md:pb-6">
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
             <Tabs defaultValue="subscription" className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-2">
-                <TabsTrigger value="subscription">Subscription</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsList className="grid w-full max-w-md grid-cols-3">
+                <TabsTrigger value="subscription">{t('settings.subscription')}</TabsTrigger>
+                <TabsTrigger value="preferences">{t('settings.preferences')}</TabsTrigger>
+                <TabsTrigger value="profile">{t('settings.profile')}</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="preferences" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Languages className="h-5 w-5 text-emerald-500" />
+                      <CardTitle>{t('settings.language')}</CardTitle>
+                    </div>
+                    <CardDescription>{t('settings.selectLanguage')}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="language">{t('settings.language')}</Label>
+                      <Select value={i18n.language} onValueChange={handleLanguageChange}>
+                        <SelectTrigger id="language" className="w-full max-w-xs">
+                          <SelectValue placeholder={t('settings.selectLanguage')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="es">Español</SelectItem>
+                          <SelectItem value="fr">Français</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
               <TabsContent value="subscription" className="space-y-6 mt-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Choose Your Plan</h2>
-                  <p className="text-gray-600">Upgrade to unlock premium features and unlimited access</p>
+                  <h2 className="text-xl font-semibold mb-2">{t('settings.currentPlan')}</h2>
+                  <p className="text-gray-600">{t('settings.upgradePlan')}</p>
                 </div>
 
                 {loadingTiers ? (
@@ -254,7 +295,7 @@ export function SettingsPage() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="settings" className="space-y-6 mt-6">
+              <TabsContent value="profile" className="space-y-6 mt-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Account Settings</CardTitle>

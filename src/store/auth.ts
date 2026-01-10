@@ -202,8 +202,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                   loading: false 
                 })
               }
-            })
-            .catch(() => {
+            }, () => {
               console.log('⚠️  Profile fetch failed, using session data')
               set({ 
                 user: {
@@ -247,16 +246,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .select('*')
           .eq('id', session.user.id)
           .single()
-          .then(({ data: profile }) => {
-            if (profile) {
-              console.log('✅ Updated with profile data from auth state change')
-              set({ user: profile as User })
+          .then(
+            ({ data: profile }) => {
+              if (profile) {
+                console.log('✅ Updated with profile data from auth state change')
+                set({ user: profile as User })
+              }
+            },
+            () => {
+              console.log('⚠️  Profile fetch failed in auth state change (non-critical)')
+              // User is already set, so this is fine
             }
-          })
-          .catch((error) => {
-            console.log('⚠️  Profile fetch failed in auth state change (non-critical):', error)
-            // User is already set, so this is fine
-          })
+          )
       } else if (event === 'SIGNED_OUT') {
         set({ user: null, loading: false })
       }
