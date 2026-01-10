@@ -2,31 +2,66 @@
 
 A modern SaaS application for managing your home pantry with AI-powered features, built with React, TypeScript, Supabase, and shadcn/ui.
 
-## Features
+## ✨ Features
 
-- 🔐 **Authentication** - Secure user authentication with Supabase Auth
+- 🔐 **Authentication** - Secure user authentication with Supabase Auth (email + OAuth)
 - 📦 **Pantry Management** - Add, edit, delete, and track pantry items
 - 🗓️ **Expiry Tracking** - Monitor expiration dates and get alerts for expiring items
-- 🏷️ **Categories** - Organize items by categories
-- 📍 **Location Tracking** - Track where items are stored
-- 🤖 **AI Integration** - Ready for AI-powered recipe suggestions and insights
+- 📸 **AI Photo Scanning** - Scan products with camera to auto-fill item details
+- 🏷️ **Categories** - Organize items by categories with emoji indicators
+- 📍 **Location Tracking** - Track where items are stored (Fridge, Freezer, etc.)
+- ⚡ **Quick Adjust** - Fast quantity adjustments with +/- buttons
+- 🛒 **Shopping List** - Automatically track low stock items
+- 💎 **Subscription Tiers** - Free and Pro plans with Stripe integration
 - 📱 **Responsive Design** - Beautiful UI that works on all devices
 - 🎨 **Modern UI** - Built with shadcn/ui and Tailwind CSS
 
-## Tech Stack
+## 🏗️ Architecture
+
+This project follows a **clean service layer architecture**:
+
+- **Services** - Business logic and API calls (single source of truth)
+- **Hooks** - React Query hooks that use services
+- **Components** - UI components that use hooks
+- **Store** - Global state management with Zustand
+
+📚 See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for detailed documentation.
+
+## 🛠️ Tech Stack
 
 - **Frontend**: React 18, TypeScript, Vite
 - **UI Library**: shadcn/ui (Radix UI + Tailwind CSS)
 - **Backend**: Supabase (Database, Auth, Storage)
-- **State Management**: Zustand
-- **Data Fetching**: TanStack Query (React Query)
+- **State Management**: Zustand + TanStack Query
+- **Testing**: Vitest + Testing Library
 - **Routing**: React Router v6
-- **Form Validation**: React Hook Form + Zod
+- **AI**: OpenAI API for image analysis
+- **Payments**: Stripe
 - **Deployment**: Vercel
 - **Icons**: Lucide React
-- **Date Handling**: date-fns
 
-## Getting Started
+## 📁 Project Structure
+
+```
+src/
+├── components/         # React components
+│   ├── layout/        # Navigation, headers
+│   ├── pantry/        # Pantry-specific components
+│   └── ui/            # Reusable UI components (shadcn)
+├── hooks/             # Custom React hooks
+├── lib/               # Utilities and configurations
+├── pages/             # Page components
+├── services/          # Business logic & API calls ⭐
+│   ├── __tests__/     # Service unit tests
+│   ├── pantry.service.ts
+│   ├── auth.service.ts
+│   └── subscription.service.ts
+├── store/             # Zustand stores
+├── test/              # Test utilities and setup
+└── types/             # TypeScript definitions
+```
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -131,20 +166,70 @@ CREATE TRIGGER on_auth_user_created
 
 4. **Start the development server:**
 
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
 Visit `http://localhost:5173` to see your app!
 
-## Available Scripts
+## 🧪 Testing
+
+### Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run tests with UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+```
+
+### Test Structure
+
+- **Unit Tests** - Service layer and utilities
+- **Integration Tests** - Full CRUD flows (requires test DB)
+- **Component Tests** - UI component behavior
+
+See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for testing best practices.
+
+## 📜 Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
+- `npm test` - Run tests
+- `npm run test:ui` - Run tests with UI
+- `npm run test:coverage` - Generate coverage report
 
-## Deployment to Vercel
+## 🏛️ Service Layer
+
+The app uses a clean service layer architecture for all API calls:
+
+```typescript
+// ✅ Use services
+import { pantryService } from '@/services'
+
+const items = await pantryService.getItems(userId)
+```
+
+```typescript
+// ❌ Don't call Supabase directly
+const { data } = await supabase.from('pantry_items').select('*')
+```
+
+Available services:
+- `pantryService` - Pantry CRUD operations
+- `authService` - Authentication
+- `subscriptionService` - Subscription management
+
+## 🚀 Deployment to Vercel
 
 1. **Push your code to GitHub**
 
@@ -159,14 +244,38 @@ Visit `http://localhost:5173` to see your app!
 4. **Deploy!**
    Vercel will automatically deploy your app
 
-## Project Structure
+## 📱 Mobile App (Coming Soon)
 
-\`\`\`
-pantry/
-├── public/          # Static assets
-├── src/
-│   ├── components/  # React components
-│   │   ├── layout/  # Layout components
+This project can be converted to a native iOS/Android app using **Capacitor**:
+
+```bash
+npm install @capacitor/core @capacitor/cli
+npm install @capacitor/ios @capacitor/android
+npx cap init
+npm run build
+npx cap add ios
+npx cap open ios
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Write tests for your changes
+4. Commit your changes (`git commit -m 'Add amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
+
+## 📚 Documentation
+
+- [Architecture Guide](./docs/ARCHITECTURE.md) - Detailed architecture documentation
+- [Developer Guide](./docs/DEV_GUIDE.md) - Quick reference for developers
+- [Session Configuration](./docs/SESSION_CONFIG.md) - Supabase session setup
+- [Supabase Schema](./supabase/migrations/README.md) - Database schema and migrations
+
+## 📄 License
+
+This project is private and not licensed for public use.
 │   │   ├── pantry/  # Pantry-specific components
 │   │   └── ui/      # shadcn/ui components
 │   ├── hooks/       # Custom React hooks

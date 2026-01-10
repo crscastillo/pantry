@@ -203,18 +203,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 })
               }
             })
-            .catch(() => {
-              console.log('⚠️  Profile fetch failed, using session data')
-              set({ 
-                user: {
-                  id: session.user.id,
-                  email: session.user.email!,
-                  full_name: session.user.user_metadata?.full_name || null,
-                  avatar_url: null,
-                }, 
-                loading: false 
-              })
-            })
         } else {
           console.log('ℹ️  No session found')
           set({ user: null, loading: false })
@@ -235,7 +223,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .select('*')
           .eq('id', session.user.id)
           .single()
-          .catch(() => ({ data: null }))
         
         set({ 
           user: profile || {

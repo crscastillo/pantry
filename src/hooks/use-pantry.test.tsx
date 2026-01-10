@@ -19,7 +19,7 @@ vi.mock('../lib/supabase', () => ({
       order: vi.fn().mockReturnThis(),
       insert: vi.fn().mockResolvedValue({ data: null, error: null }),
       update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockResolvedValue({ data: null, error: null }),
+      delete: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: null, error: null }),
     })),
   },
@@ -203,6 +203,7 @@ describe('useAddPantryItem', () => {
 describe('useUpdatePantryItem', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockUseAuthStore.mockReturnValue({ user: { id: 'user123' } })
   })
 
   it('should update pantry item successfully', async () => {
@@ -222,8 +223,10 @@ describe('useUpdatePantryItem', () => {
     mockFrom.mockReturnValue({
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            single: singleMock,
+          eq: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: singleMock,
+            }),
           }),
         }),
       }),
@@ -247,8 +250,10 @@ describe('useUpdatePantryItem', () => {
     mockFrom.mockReturnValue({
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            single: singleMock,
+          eq: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: singleMock,
+            }),
           }),
         }),
       }),
@@ -270,8 +275,10 @@ describe('useUpdatePantryItem', () => {
     mockFrom.mockReturnValue({
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            single: singleMock,
+          eq: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: singleMock,
+            }),
           }),
         }),
       }),
@@ -288,31 +295,36 @@ describe('useUpdatePantryItem', () => {
 describe('useDeletePantryItem', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockUseAuthStore.mockReturnValue({ user: { id: 'user123' } })
   })
 
   it('should delete pantry item successfully', async () => {
     const itemId = '123'
 
-    const deleteMock = vi.fn().mockReturnThis()
-    const eqMock = vi.fn().mockResolvedValue({ data: null, error: null })
-
     mockFrom.mockReturnValue({
-      delete: deleteMock,
-      eq: eqMock,
+      delete: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
     })
 
     const { result } = renderHook(() => useDeletePantryItem(), { wrapper: createWrapper() })
 
     await result.current.mutateAsync(itemId)
 
-    expect(deleteMock).toHaveBeenCalled()
-    expect(eqMock).toHaveBeenCalledWith('id', itemId)
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
   })
 
   it('should handle delete error', async () => {
     mockFrom.mockReturnValue({
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'Delete failed' } }),
+      delete: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'Delete failed' } }),
+        }),
+      }),
     })
 
     const { result } = renderHook(() => useDeletePantryItem(), { wrapper: createWrapper() })

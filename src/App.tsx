@@ -8,6 +8,7 @@ import { SignupPage } from '@/pages/signup'
 import { DashboardPage } from '@/pages/dashboard'
 import { ShoppingListPage } from '@/pages/shopping-list'
 import { SettingsPage } from '@/pages/settings'
+import RecipesPage from '@/pages/recipes'
 import { Toaster } from '@/components/ui/toaster'
 import { Package } from 'lucide-react'
 
@@ -105,6 +106,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ShoppingListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/recipes"
+        element={
+          <ProtectedRoute>
+            <RecipesPage />
           </ProtectedRoute>
         }
       />

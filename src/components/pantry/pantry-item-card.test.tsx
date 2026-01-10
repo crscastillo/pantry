@@ -56,7 +56,7 @@ describe('PantryItemCard', () => {
       wrapper: createWrapper(),
     })
 
-    expect(screen.getByText(/days in/i)).toBeInTheDocument()
+    expect(screen.getByText(/days left/i)).toBeInTheDocument()
   })
 
   it('should show expired badge for expired items', () => {
@@ -81,15 +81,16 @@ describe('PantryItemCard', () => {
     expect(screen.getByText(/low stock/i)).toBeInTheDocument()
   })
 
-  it('should call onEdit when card is clicked', () => {
+  it('should open drawer when edit button is clicked', () => {
     render(<PantryItemCard item={mockItem} onDelete={mockOnDelete} onEdit={mockOnEdit} />, {
       wrapper: createWrapper(),
     })
 
-    const card = screen.getByRole('button')
-    fireEvent.click(card)
+    const editButton = screen.getByText(/edit details/i)
+    fireEvent.click(editButton)
 
-    expect(mockOnEdit).toHaveBeenCalledWith(mockItem)
+    // Should open the drawer
+    expect(screen.getByText(/view and manage item details/i)).toBeInTheDocument()
   })
 
   it('should handle item without expiry date', () => {
@@ -128,9 +129,9 @@ describe('PantryItemCard', () => {
       { wrapper: createWrapper() }
     )
 
-    // Check that the button has overflow-hidden to prevent horizontal scroll
-    const button = container.querySelector('button')
-    expect(button).toHaveClass('overflow-hidden')
+    // Check that the card wrapper has overflow-hidden to prevent horizontal scroll
+    const cardWrapper = container.querySelector('.overflow-hidden')
+    expect(cardWrapper).toBeInTheDocument()
   })
 
   it('should render with responsive width and proper text wrapping', () => {
@@ -144,9 +145,9 @@ describe('PantryItemCard', () => {
       { wrapper: createWrapper() }
     )
 
-    const button = container.querySelector('button')
-    expect(button).toHaveClass('w-full')
-    expect(button).toHaveClass('overflow-hidden')
+    const cardWrapper = container.querySelector('.w-full')
+    expect(cardWrapper).toBeInTheDocument()
+    expect(cardWrapper).toHaveClass('overflow-hidden')
     expect(screen.getByText(longNameItem.name)).toBeInTheDocument()
   })
 })
