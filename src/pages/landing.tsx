@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -13,8 +12,12 @@ import {
   CheckCircle,
   ArrowRight
 } from 'lucide-react'
+import { getSubdomainUrl } from '@/lib/subdomain'
 
 export function LandingPage() {
+  const appLoginUrl = getSubdomainUrl('app', '/login')
+  const appSignupUrl = getSubdomainUrl('app', '/signup')
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Navigation */}
@@ -25,12 +28,12 @@ export function LandingPage() {
             <span className="font-bold text-xl">Pantry</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/login">
+            <a href={appLoginUrl}>
               <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link to="/signup">
+            </a>
+            <a href={appSignupUrl}>
               <Button>Get Started</Button>
-            </Link>
+            </a>
           </div>
         </div>
       </nav>
@@ -54,17 +57,17 @@ export function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link to="/signup">
+            <a href={appSignupUrl}>
               <Button size="lg" className="text-lg px-8">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </Link>
-            <Link to="/login">
+            </a>
+            <a href={appLoginUrl}>
               <Button size="lg" variant="outline" className="text-lg px-8">
                 Sign In
               </Button>
-            </Link>
+            </a>
           </div>
 
           <div className="pt-8 grid grid-cols-3 gap-8 text-center">
@@ -241,12 +244,12 @@ export function LandingPage() {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/signup">
+              <a href={appSignupUrl}>
                 <Button size="lg" variant="secondary" className="text-lg px-8">
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-              </Link>
+              </a>
             </div>
             <p className="text-sm text-white/80 mt-6">
               Free for 30 days. Cancel anytime. No credit card required.

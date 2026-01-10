@@ -11,6 +11,7 @@ import { SettingsPage } from '@/pages/settings'
 import RecipesPage from '@/pages/recipes'
 import { Toaster } from '@/components/ui/toaster'
 import { Package } from 'lucide-react'
+import { getSubdomain } from '@/lib/subdomain'
 
 const queryClient = new QueryClient()
 
@@ -67,7 +68,18 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function AppRoutes() {
+// Landing page routes (root domain)
+function LandingRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
+
+// App routes (app subdomain)
+function AppOnlyRoutes() {
   const { initialize } = useAuthStore()
 
   useEffect(() => {
@@ -76,7 +88,7 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route
         path="/login"
         element={
@@ -125,9 +137,46 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  )
+}
+
+// Platform routes (platform subdomain) - Coming soon
+function PlatformRoutes() {
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <Package className="h-16 w-16 mx-auto text-emerald-500 mb-4" />
+              <h1 className="text-2xl font-bold mb-2">Platform Dashboard</h1>
+              <p className="text-muted-foreground">Coming soon...</p>
+            </div>
+          </div>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
+}
+
+// Main routing component that determines which routes to show based on subdomain
+function AppRoutes() {
+  const subdomain = getSubdomain()
+
+  if (subdomain === 'root') {
+    return <LandingRoutes />
+  }
+
+  if (subdomain === 'platform') {
+    return <PlatformRoutes />
+  }
+
+  // Default to app routes
+  return <AppOnlyRoutes />
 }
 
 function App() {

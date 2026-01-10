@@ -13,19 +13,27 @@ A modern SaaS application for managing your home pantry with AI-powered features
 - ⚡ **Quick Adjust** - Fast quantity adjustments with +/- buttons
 - 🛒 **Shopping List** - Automatically track low stock items
 - 💎 **Subscription Tiers** - Free and Pro plans with Stripe integration
+- 🌍 **Internationalization** - Support for EN, ES, FR with language selector
+- 🌐 **Subdomain Routing** - Separate landing, app, and admin via subdomains
 - 📱 **Responsive Design** - Beautiful UI that works on all devices
 - 🎨 **Modern UI** - Built with shadcn/ui and Tailwind CSS
 
 ## 🏗️ Architecture
 
-This project follows a **clean service layer architecture**:
+This project follows a **clean service layer architecture** with **subdomain-based routing**:
 
 - **Services** - Business logic and API calls (single source of truth)
 - **Hooks** - React Query hooks that use services
 - **Components** - UI components that use hooks
 - **Store** - Global state management with Zustand
 
-📚 See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for detailed documentation.
+### Subdomain Architecture
+
+- **Root Domain** (`yourdomain.com`) - Landing page and marketing
+- **App Subdomain** (`app.yourdomain.com`) - Main application
+- **Platform Subdomain** (`platform.yourdomain.com`) - Admin dashboard (coming soon)
+
+📚 See [SUBDOMAIN_ROUTING.md](./SUBDOMAIN_ROUTING.md) for subdomain configuration.
 
 ## 🛠️ Tech Stack
 
@@ -34,7 +42,8 @@ This project follows a **clean service layer architecture**:
 - **Backend**: Supabase (Database, Auth, Storage)
 - **State Management**: Zustand + TanStack Query
 - **Testing**: Vitest + Testing Library
-- **Routing**: React Router v6
+- **Routing**: React Router v6 + Subdomain Detection
+- **i18n**: react-i18next (EN, ES, FR)
 - **AI**: OpenAI API for image analysis
 - **Payments**: Stripe
 - **Deployment**: Vercel
@@ -48,8 +57,12 @@ src/
 │   ├── layout/        # Navigation, headers
 │   ├── pantry/        # Pantry-specific components
 │   └── ui/            # Reusable UI components (shadcn)
+├── i18n/              # Internationalization
+│   ├── index.ts       # i18n configuration
+│   └── locales/       # Translation files (en, es, fr)
 ├── hooks/             # Custom React hooks
 ├── lib/               # Utilities and configurations
+│   └── subdomain.ts   # Subdomain detection utilities ⭐
 ├── pages/             # Page components
 ├── services/          # Business logic & API calls ⭐
 │   ├── __tests__/     # Service unit tests
@@ -90,6 +103,7 @@ Edit `.env`:
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_OPENAI_API_KEY=your_openai_api_key
+VITE_DOMAIN_URL=localhost:5173
 \`\`\`
 
 3. **Set up Supabase database:**
@@ -171,6 +185,26 @@ npm run dev
 ```
 
 Visit `http://localhost:5173` to see your app!
+
+### Testing Subdomains Locally
+
+To test different subdomains in development:
+
+```bash
+# Landing page (root domain)
+open http://localhost:5173/?subdomain=root
+
+# Main app (default)
+open http://localhost:5173/?subdomain=app
+
+# Platform admin
+open http://localhost:5173/?subdomain=platform
+
+# Or use the helper script
+./scripts/test-subdomains.sh
+```
+
+See [SUBDOMAIN_ROUTING.md](./SUBDOMAIN_ROUTING.md) for more details.
 
 ## 🧪 Testing
 
