@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
-import { sendWelcomeEmail } from '@/lib/email'
 import { User } from '@/types'
 
 interface AuthState {
@@ -126,21 +125,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (data.user) {
       // Profile will be created automatically by trigger
       console.log('✅ User signed up:', data.user.email)
-      
-      // Send welcome email (non-blocking)
-      sendWelcomeEmail({
-        email: data.user.email!,
-        fullName: fullName,
-        userId: data.user.id,
-      }).then((result) => {
-        if (result.success) {
-          console.log('✅ Welcome email sent')
-        } else {
-          console.warn('⚠️ Failed to send welcome email:', result.error)
-        }
-      }).catch((err) => {
-        console.error('❌ Welcome email error:', err)
-      })
     }
   },
   
