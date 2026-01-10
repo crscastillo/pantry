@@ -6,12 +6,14 @@ import { AddItemDialog } from '@/components/pantry/add-item-dialog'
 import { Navigation } from '@/components/layout/navigation'
 import { usePantryItems } from '@/hooks/use-pantry'
 import { PantryItem } from '@/types'
-import { Plus, Search, ShoppingCart, Package } from 'lucide-react'
+import { Plus, Search, ShoppingCart, Package, Settings } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useNavigate } from 'react-router-dom'
 
 export function ShoppingListPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -86,6 +88,22 @@ export function ShoppingListPage() {
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {t('pantry.addItem')}
+              </Button>
+              {/* Mobile Add Button */}
+              <Button 
+                onClick={handleAddClick}
+                size="icon"
+                className="md:hidden bg-emerald-500 hover:bg-emerald-600 text-white"
+              >
+                <Plus className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate('/app/settings')}
+                className="md:hidden"
+              >
+                <Settings className="h-5 w-5" />
               </Button>
             </div>
 

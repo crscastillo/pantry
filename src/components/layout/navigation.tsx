@@ -116,34 +116,16 @@ export function Navigation({ onAddClick }: NavigationProps) {
               )
             })}
             
-            {/* Center Add Button */}
-            <button
-              onClick={onAddClick}
-              className="flex flex-col items-center gap-1 px-3 py-2 -mt-6"
+            {/* Only Recipes - Settings moved to header */}
+            <button 
+              onClick={() => navigate('/app/recipes')}
+              className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors ${
+                location.pathname === '/app/recipes' ? 'text-emerald-500' : 'text-gray-400 hover:text-gray-600'
+              }`}
             >
-              <div className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full p-4 shadow-lg">
-                <Plus className="h-6 w-6" />
-              </div>
-              <span className="text-xs font-medium text-emerald-600 mt-1">{t('common.add')}</span>
+              <UtensilsCrossed className="h-6 w-6" />
+              <span className="text-xs font-medium">{t('navigation.recipes')}</span>
             </button>
-            
-            {navItems.slice(2, 4).map((item) => {
-              const Icon = item.icon
-              const isActive = location.pathname === item.path
-              
-              return (
-                <button 
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors ${
-                    isActive ? 'text-emerald-500' : 'text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  <Icon className="h-6 w-6" />
-                  <span className="text-xs font-medium">{item.label}</span>
-                </button>
-              )
-            })}
           </div>
         </div>
       </div>

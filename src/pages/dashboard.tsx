@@ -6,10 +6,11 @@ import { AddItemDialog } from '@/components/pantry/add-item-dialog'
 import { Navigation } from '@/components/layout/navigation'
 import { usePantryItems } from '@/hooks/use-pantry'
 import { PantryItem } from '@/types'
-import { Plus, Search, Bell, Package } from 'lucide-react'
+import { Plus, Search, Bell, Package, Settings } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useNavigate } from 'react-router-dom'
 
 const getLocationTranslationKey = (location: string) => {
   const keyMap: Record<string, string> = {
@@ -24,6 +25,7 @@ const getLocationTranslationKey = (location: string) => {
 
 export function DashboardPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null)
   const [activeFilter, setActiveFilter] = useState<string>('All')
@@ -105,6 +107,14 @@ export function DashboardPage() {
                   <Plus className="h-4 w-4 mr-2" />
                   {t('pantry.addItem')}
                 </Button>
+                {/* Mobile Add Button */}
+                <Button 
+                  onClick={handleAddClick}
+                  size="icon"
+                  className="md:hidden bg-emerald-500 hover:bg-emerald-600 text-white"
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
                 <Button variant="ghost" size="icon" className="relative">
                   <Bell className="h-5 w-5" />
                   {expiredItems > 0 && (
@@ -112,6 +122,14 @@ export function DashboardPage() {
                       {expiredItems}
                     </span>
                   )}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => navigate('/app/settings')}
+                  className="md:hidden"
+                >
+                  <Settings className="h-5 w-5" />
                 </Button>
               </div>
             </div>
