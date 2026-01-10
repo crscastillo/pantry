@@ -1,4 +1,4 @@
-import { Package, ShoppingCart, UtensilsCrossed, LogOut, Settings } from 'lucide-react'
+import { Package, ShoppingCart, UtensilsCrossed, LogOut, Settings, Plus } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store/auth'
@@ -98,7 +98,36 @@ export function Navigation({ onAddClick }: NavigationProps) {
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t safe-bottom z-50">
         <div className="max-w-2xl mx-auto px-2 py-2">
           <div className="flex items-center justify-around">
-            {navItems.map((item) => {
+            {navItems.slice(0, 2).map((item) => {
+              const Icon = item.icon
+              const isActive = location.pathname === item.path
+              
+              return (
+                <button 
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors ${
+                    isActive ? 'text-emerald-500' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Icon className="h-6 w-6" />
+                  <span className="text-xs font-medium">{item.label}</span>
+                </button>
+              )
+            })}
+            
+            {/* Center Add Button */}
+            <button
+              onClick={onAddClick}
+              className="flex flex-col items-center gap-1 px-3 py-2 -mt-6"
+            >
+              <div className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full p-4 shadow-lg">
+                <Plus className="h-6 w-6" />
+              </div>
+              <span className="text-xs font-medium text-emerald-600 mt-1">{t('common.add')}</span>
+            </button>
+            
+            {navItems.slice(2, 4).map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.path
               

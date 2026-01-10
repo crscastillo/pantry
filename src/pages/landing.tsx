@@ -40,17 +40,17 @@ export function LandingPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-2">
             <ChefHat className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">{t('landing.appName')}</span>
+            <span className="font-bold text-lg sm:text-xl">{t('landing.appName')}</span>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
+                <Button variant="ghost" size="sm" className="gap-1 sm:gap-2 h-9 px-2 sm:px-3">
                   <Languages className="h-4 w-4" />
-                  {i18n.language.toUpperCase().slice(0, 2)}
+                  <span className="hidden xs:inline">{i18n.language.toUpperCase().slice(0, 2)}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -65,11 +65,11 @@ export function LandingPage() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link to="/login">
-              <Button variant="ghost">{t('landing.signIn')}</Button>
+            <Link to="/login" className="hidden sm:inline-block">
+              <Button variant="ghost" size="sm">{t('landing.signIn')}</Button>
             </Link>
             <Link to="/signup">
-              <Button>{t('landing.getStarted')}</Button>
+              <Button size="sm" className="h-9">{t('landing.getStarted')}</Button>
             </Link>
           </div>
         </div>
