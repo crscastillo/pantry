@@ -159,60 +159,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     console.log('🚀 Initializing auth...')
     set({ initialized: true, loading: true })
     
-    // Listen to auth state changes
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Auth state change:', event, session?.user?.email)
-      
-      if (event === 'SIGNED_IN' && session?.user) {
-        console.log('✅ User signed in via state change')
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-        
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('⚠️  Profile error in state change:', profileError.message)
-        }
-        
-        if (profile) {
-          console.log('✅ Profile set from state change')
-          set({ user: profile as User, loading: false })
-        } else {
-          console.log('⚠️  Creating profile from state change')
-          // Profile doesn't exist, create it in the database
-          const basicUser: User = {
-            id: session.user.id,
-            email: session.user.email!,
-            full_name: session.user.user_metadata?.full_name || null,
-            avatar_url: null,
-          }
-          
-          const { error: insertError } = await (supabase as any)
-            .from('profiles')
-            .insert(basicUser)
-          
-          if (insertError && insertError.code !== '23505') {
-            console.error('❌ Failed to create profile in state change:', insertError)
-          }
-          
-          set({ user: basicUser, loading: false })
-        }
-      } else if (event === 'SIGNED_OUT') {
-        console.log('👋 User signed out')
-        set({ user: null, loading: false })
-      } else if (event === 'TOKEN_REFRESHED') {
-        // Don't show loading on token refresh
-        console.log('🔄 Token refreshed silently')
+    // Aggressive safety timeout - ALWAYS stop loading after 3 seconds
+    setTimeout(() => {
+      const currentState = get()
+      if (currentState.loading) {
+        console.warn('⏱️  FORCING loading to false after timeout')
+        set({ loading: false })
       }
-    })
+    }, 3000)
     
-    // Initial auth check - do this immediately with optimized loading
-    const checkInitialAuth = async () => {
-      try {
-        console.log('🔍 Checking initial auth...')
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
+    // Initial auth check
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
         if (error) {
           console.error('❌ Session error:', error)
           set({ user: null, loading: false })
@@ -221,49 +179,76 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         
         if (session?.user) {
           console.log('✅ Session found:', session.user.email)
-          const { data: profile, error: profileError } = await supabase
+          
+          // Try to get profile, but don't block on it
+          supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single()
-          
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error('⚠️  Profile error on init:', profileError.message, profileError.code)
-          }
-          
-          if (profile) {
-            console.log('✅ Profile loaded on init')
-            set({ user: profile as User, loading: false })
-          } else {
-            console.log('⚠️  No profile, creating one on init')
-            // Profile doesn't exist, create it in the database
-            const basicUser: User = {
-              id: session.user.id,
-              email: session.user.email!,
-              full_name: session.user.user_metadata?.full_name || null,
-              avatar_url: null,
-            }
-            
-            const { error: insertError } = await (supabase as any)
-              .from('profiles')
-              .insert(basicUser)
-            
-            if (insertError && insertError.code !== '23505') {
-              console.error('❌ Failed to create profile on init:', insertError)
-            }
-            
-            set({ user: basicUser, loading: false })
-          }
+            .then(({ data: profile }) => {
+              if (profile) {
+                console.log('✅ Profile loaded')
+                set({ user: profile as User, loading: false })
+              } else {
+                console.log('⚠️  Using session data')
+                set({ 
+                  user: {
+                    id: session.user.id,
+                    email: session.user.email!,
+                    full_name: session.user.user_metadata?.full_name || null,
+                    avatar_url: null,
+                  }, 
+                  loading: false 
+                })
+              }
+            })
+            .catch(() => {
+              console.log('⚠️  Profile fetch failed, using session data')
+              set({ 
+                user: {
+                  id: session.user.id,
+                  email: session.user.email!,
+                  full_name: session.user.user_metadata?.full_name || null,
+                  avatar_url: null,
+                }, 
+                loading: false 
+              })
+            })
         } else {
           console.log('ℹ️  No session found')
           set({ user: null, loading: false })
         }
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error('❌ Auth initialization error:', error)
         set({ user: null, loading: false })
-      }
-    }
+      })
     
-    checkInitialAuth()
+    // Listen to auth state changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 Auth state change:', event)
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .catch(() => ({ data: null }))
+        
+        set({ 
+          user: profile || {
+            id: session.user.id,
+            email: session.user.email!,
+            full_name: session.user.user_metadata?.full_name || null,
+            avatar_url: null,
+          }, 
+          loading: false 
+        })
+      } else if (event === 'SIGNED_OUT') {
+        set({ user: null, loading: false })
+      }
+    })
   },
 }))
