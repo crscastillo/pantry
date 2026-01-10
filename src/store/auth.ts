@@ -203,6 +203,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 })
               }
             })
+            .catch(() => {
+              console.log('⚠️  Profile fetch failed, using session data')
+              set({ 
+                user: {
+                  id: session.user.id,
+                  email: session.user.email!,
+                  full_name: session.user.user_metadata?.full_name || null,
+                  avatar_url: null,
+                }, 
+                loading: false 
+              })
+            })
         } else {
           console.log('ℹ️  No session found')
           set({ user: null, loading: false })
@@ -218,21 +230,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.log('🔄 Auth state change:', event)
       
       if (event === 'SIGNED_IN' && session?.user) {
-        const { data: profile } = await supabase
+        // Immediately set user from session - don't wait for profile
+        const basicUser = {
+          id: session.user.id,
+          email: session.user.email!,
+          full_name: session.user.user_metadata?.full_name || null,
+          avatar_url: null,
+        }
+        
+        console.log('✅ Setting user from session in auth state change')
+        set({ user: basicUser, loading: false })
+        
+        // Try to fetch profile in background (non-blocking, non-critical)
+        supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single()
-        
-        set({ 
-          user: profile || {
-            id: session.user.id,
-            email: session.user.email!,
-            full_name: session.user.user_metadata?.full_name || null,
-            avatar_url: null,
-          }, 
-          loading: false 
-        })
+          .then(({ data: profile }) => {
+            if (profile) {
+              console.log('✅ Updated with profile data from auth state change')
+              set({ user: profile as User })
+            }
+          })
+          .catch((error) => {
+            console.log('⚠️  Profile fetch failed in auth state change (non-critical):', error)
+            // User is already set, so this is fine
+          })
       } else if (event === 'SIGNED_OUT') {
         set({ user: null, loading: false })
       }
