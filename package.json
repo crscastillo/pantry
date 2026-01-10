@@ -12,6 +12,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "setup:oauth": "node scripts/setup-oauth.js",
+    "setup:resend": "bash scripts/setup-resend.sh",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:status": "supabase status",
