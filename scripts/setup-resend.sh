@@ -70,7 +70,7 @@ case $choice in
     2)
         echo ""
         echo "🔑 Setting Resend API key as Supabase secret..."
-        supabase secrets set RESEND_API_KEY="$RESEND_API_KEY"
+        echo "$RESEND_API_KEY" | supabase secrets set RESEND_API_KEY
         echo ""
         echo "✅ Secret set successfully!"
         ;;
@@ -80,7 +80,7 @@ case $choice in
         supabase functions deploy send-welcome-email
         echo ""
         echo "🔑 Setting Resend API key as Supabase secret..."
-        supabase secrets set RESEND_API_KEY="$RESEND_API_KEY"
+        echo "$RESEND_API_KEY" | supabase secrets set RESEND_API_KEY
         echo ""
         echo "✅ Setup complete!"
         ;;
