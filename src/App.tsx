@@ -9,6 +9,9 @@ import { DashboardPage } from '@/pages/dashboard'
 import { ShoppingListPage } from '@/pages/shopping-list'
 import { SettingsPage } from '@/pages/settings'
 import RecipesPage from '@/pages/recipes'
+import { PlatformLoginPage } from '@/pages/platform-login'
+import { PlatformDashboardPage } from '@/pages/platform-dashboard'
+import { PlatformSetupPage } from '@/pages/platform-setup'
 import { Toaster } from '@/components/ui/toaster'
 import { Package } from 'lucide-react'
 import { getSubdomain } from '@/lib/subdomain'
@@ -147,23 +150,34 @@ function AppOnlyRoutes() {
   )
 }
 
-// Platform routes (platform subdomain) - Coming soon
+// Platform routes (platform subdomain)
 function PlatformRoutes() {
+  const { initialize, user } = useAuthStore()
+
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
+  // Check if user is root user
+  const rootUserEmail = import.meta.env.VITE_ROOT_USER_EMAIL
+  const isRootUser = user?.email === rootUserEmail && (user as any)?.is_platform_owner === true
+
   return (
     <Routes>
+      <Route path="/setup" element={<PlatformSetupPage />} />
+      <Route path="/login" element={<PlatformLoginPage />} />
       <Route
-        path="/"
+        path="/dashboard"
         element={
-          <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="text-center">
-              <Package className="h-16 w-16 mx-auto text-emerald-500 mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Platform Dashboard</h1>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </div>
-          </div>
+          isRootUser ? (
+            <PlatformDashboardPage />
+          ) : (
+            <Navigate to="/login" replace />
+          )
         }
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )
 }

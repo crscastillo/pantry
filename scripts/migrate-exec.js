@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Direct Migration Executor using Supabase Management API
- * This uses direct HTTP calls to execute SQL
+ * Direct Migration Executor using Supabase Service Role
+ * Executes SQL migrations directly via Supabase REST API
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,36 +18,33 @@ dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
 const MIGRATIONS_DIR = path.join(__dirname, '../supabase/migrations');
 
-async function executeSql(sql) {
-  const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase credentials');
-  }
-  
-  // Extract project ref from URL
-  const projectRef = supabaseUrl.match(/https:\/\/([^.]+)/)[1];
-  
-  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`
-    },
-    body: JSON.stringify({ query: sql })
-  });
-  
-  return response;
-}
-
 async function runMigrations() {
   console.log('\n🚀 Running Supabase Migrations\n');
+  console.log('═'.repeat(70));
+  
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('\n❌ Error: Missing Supabase credentials');
+    console.error('   Required: VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+    console.error('   Check your .env.local file\n');
+    process.exit(1);
+  }
+  
+  // Create client with service role key for admin operations
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
   
   const files = fs.readdirSync(MIGRATIONS_DIR)
     .filter(f => f.endsWith('.sql') && f.match(/^\d{3}_/))
     .sort();
+  
+  if (files.length === 0) {
+    console.log('\n⚠️  No migration files found\n');
+    return;
+  }
+  
+  console.log(`\nFound ${files.length} migration file(s)\n`);
   
   console.log(`Found ${files.length} migration(s)\n`);
   
