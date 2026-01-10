@@ -43,9 +43,9 @@ If no query parameter is provided, it defaults to the app subdomain.
 Set your domain in `.env`:
 
 ```env
-VITE_DOMAIN_URL=localhost:5173  # For development
+VITE_ROOT_URL=localhost:5173  # For development
 # or
-VITE_DOMAIN_URL=yourdomain.com  # For production
+VITE_ROOT_URL=yourdomain.com  # For production
 ```
 
 ## Production Deployment
@@ -66,7 +66,7 @@ VITE_DOMAIN_URL=yourdomain.com  # For production
    ```
 
 3. **Environment Variables**:
-   Set `VITE_DOMAIN_URL=yourdomain.com` in Vercel environment variables
+   Set `VITE_ROOT_URL=yourdomain.com` in Vercel environment variables
 
 ### Alternative Platforms
 
@@ -74,7 +74,7 @@ VITE_DOMAIN_URL=yourdomain.com  # For production
 1. Add domain in site settings
 2. Configure DNS with Netlify nameservers
 3. Add subdomain records for `app` and `platform`
-4. Set environment variable: `VITE_DOMAIN_URL=yourdomain.com`
+4. Set environment variable: `VITE_ROOT_URL=yourdomain.com`
 
 #### Custom Server (Nginx/Apache)
 Configure virtual hosts for each subdomain pointing to the same build directory.

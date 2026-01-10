@@ -30,7 +30,7 @@
 
 In Vercel (or your hosting platform):
 ```
-VITE_DOMAIN_URL=yourdomain.com
+VITE_ROOT_URL=yourdomain.com
 ```
 
 ### Step 2: Add Custom Domains

@@ -11,7 +11,7 @@ export function getSubdomain(): Subdomain {
   if (typeof window === 'undefined') return 'root'
   
   const hostname = window.location.hostname
-  const domainUrl = import.meta.env.VITE_DOMAIN_URL || 'localhost:5173'
+  const domainUrl = import.meta.env.VITE_ROOT_URL
   
   // Remove port if present for comparison
   const baseHostname = hostname.split(':')[0]
@@ -60,9 +60,9 @@ export function getSubdomain(): Subdomain {
  * Get the URL for a specific subdomain
  */
 export function getSubdomainUrl(subdomain: Subdomain, path: string = '/'): string {
-  const rootDomain = import.meta.env.VITE_DOMAIN_URL || 'localhost:5173'
-  const appDomain = import.meta.env.VITE_APP_URL || 'app.localhost:5173'
-  const platformDomain = import.meta.env.VITE_PLATFORM_URL || 'platform.localhost:5173'
+  const rootDomain = import.meta.env.VITE_ROOT_URL
+  const appDomain = import.meta.env.VITE_APP_URL
+  const platformDomain = import.meta.env.VITE_PLATFORM_URL
   const protocol = window.location.protocol
   
   // Get the appropriate domain for the subdomain

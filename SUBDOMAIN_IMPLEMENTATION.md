@@ -4,7 +4,7 @@
 
 ### 1. Environment Configuration
 - **File**: `.env.example`
-- **Changes**: Added `VITE_DOMAIN_URL` environment variable
+- **Changes**: Added `VITE_ROOT_URL` environment variable
 - **Purpose**: Configure base domain for subdomain routing
 
 ### 2. Subdomain Detection Utility
@@ -61,7 +61,7 @@
   - Updated features list with subdomain routing
   - Added i18n to tech stack
   - Updated project structure with subdomain.ts
-  - Added VITE_DOMAIN_URL to env setup
+  - Added VITE_ROOT_URL to env setup
   - Added local subdomain testing section
 
 ## 🎯 Architecture Overview
@@ -141,7 +141,7 @@
    ```
 
 3. **Environment Variables**:
-   - Set `VITE_DOMAIN_URL=yourdomain.com` in Vercel
+   - Set `VITE_ROOT_URL=yourdomain.com` in Vercel
 
 4. **Deploy**: All subdomains will route to the same build, with client-side subdomain detection
 
