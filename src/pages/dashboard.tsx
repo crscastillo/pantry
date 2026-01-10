@@ -104,19 +104,19 @@ export function DashboardPage() {
                 {/* View Mode Selector */}
                 <div className="hidden md:flex items-center gap-1 bg-gray-100 rounded-lg p-1">
                   <Button
-                    variant={viewMode === 'adjust' ? 'default' : 'ghost'}
+                    variant="ghost"
                     size="sm"
                     onClick={() => setViewMode('adjust')}
-                    className={viewMode === 'adjust' ? 'bg-white shadow-sm' : 'hover:bg-transparent'}
+                    className={viewMode === 'adjust' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}
                   >
                     <Zap className="h-4 w-4 mr-2" />
                     Quick Adjust
                   </Button>
                   <Button
-                    variant={viewMode === 'manage' ? 'default' : 'ghost'}
+                    variant="ghost"
                     size="sm"
                     onClick={() => setViewMode('manage')}
-                    className={viewMode === 'manage' ? 'bg-white shadow-sm' : 'hover:bg-transparent'}
+                    className={viewMode === 'manage' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}
                   >
                     <Package className="h-4 w-4 mr-2" />
                     Manage
@@ -150,19 +150,19 @@ export function DashboardPage() {
             {/* Mobile View Mode Toggle */}
             <div className="md:hidden flex items-center gap-1 bg-gray-100 rounded-lg p-1 mb-4">
               <Button
-                variant={viewMode === 'adjust' ? 'default' : 'ghost'}
+                variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('adjust')}
-                className={`flex-1 ${viewMode === 'adjust' ? 'bg-white shadow-sm' : 'hover:bg-transparent'}`}
+                className={`flex-1 ${viewMode === 'adjust' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}`}
               >
                 <Zap className="h-4 w-4 mr-2" />
                 Quick Adjust
               </Button>
               <Button
-                variant={viewMode === 'manage' ? 'default' : 'ghost'}
+                variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('manage')}
-                className={`flex-1 ${viewMode === 'manage' ? 'bg-white shadow-sm' : 'hover:bg-transparent'}`}
+                className={`flex-1 ${viewMode === 'manage' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}`}
               >
                 <Package className="h-4 w-4 mr-2" />
                 Manage
