@@ -32,20 +32,8 @@ export function Navigation({ onAddClick }: NavigationProps) {
             <h1 className="text-2xl font-bold">Pantry Fast</h1>
           </div>
 
-          {/* Add Item Button */}
-          <div className="px-4 py-4">
-            <Button 
-              onClick={onAddClick}
-              className="w-full bg-emerald-500 hover:bg-emerald-600"
-              size="lg"
-            >
-              <Package className="h-5 w-5 mr-2" />
-              {t('pantry.addItem')}
-            </Button>
-          </div>
-
           {/* Navigation */}
-          <nav className="flex-1 px-4 space-y-1">
+          <nav className="flex-1 px-4 pt-4 space-y-1">
             {navItems.map((item) => (
               <button 
                 key={item.path}
