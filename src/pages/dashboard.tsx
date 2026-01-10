@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { PantryItemCard } from '@/components/pantry/pantry-item-card'
 import { PantryQuickAdjustCard } from '@/components/pantry/pantry-quick-adjust-card'
@@ -16,6 +17,7 @@ type LocationFilter = 'All' | 'Fridge' | 'Freezer' | 'Dry pantry'
 type ViewMode = 'manage' | 'adjust'
 
 export function DashboardPage() {
+  const { t } = useTranslation()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null)
   const [activeFilter, setActiveFilter] = useState<LocationFilter>('All')
@@ -29,13 +31,13 @@ export function DashboardPage() {
     try {
       await deleteMutation.mutateAsync(id)
       toast({
-        title: "Item deleted",
-        description: "The item has been removed from your pantry.",
+        title: t('pantry.itemDeleted'),
+        description: t('pantry.itemDeletedDesc'),
       })
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete item",
+        title: t('pantry.error'),
+        description: t('pantry.deleteError'),
         variant: "destructive",
       })
     }
@@ -94,7 +96,7 @@ export function DashboardPage() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search items..."
+                  placeholder={t('pantry.searchItems')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-gray-50 border-0"
@@ -110,7 +112,7 @@ export function DashboardPage() {
                     className={viewMode === 'adjust' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}
                   >
                     <Zap className="h-4 w-4 mr-2" />
-                    Quick Adjust
+                    {t('pantry.quickAdjust')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -119,7 +121,7 @@ export function DashboardPage() {
                     className={viewMode === 'manage' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}
                   >
                     <Package className="h-4 w-4 mr-2" />
-                    Manage
+                    {t('pantry.manage')}
                   </Button>
                 </div>
                 {/* Desktop Add Button */}
@@ -128,7 +130,7 @@ export function DashboardPage() {
                   className="hidden md:flex bg-emerald-500 hover:bg-emerald-600"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Item
+                  {t('pantry.addItem')}
                 </Button>
                 <Button variant="ghost" size="icon" className="relative">
                   <Bell className="h-5 w-5" />
@@ -145,7 +147,7 @@ export function DashboardPage() {
             </div>
 
             {/* Title - Mobile only */}
-            <h1 className="text-3xl font-bold mb-4 md:hidden">Pantry</h1>
+            <h1 className="text-3xl font-bold mb-4 md:hidden">{t('navigation.pantry')}</h1>
             
             {/* Mobile View Mode Toggle */}
             <div className="md:hidden flex items-center gap-1 bg-gray-100 rounded-lg p-1 mb-4">
@@ -156,7 +158,7 @@ export function DashboardPage() {
                 className={`flex-1 ${viewMode === 'adjust' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}`}
               >
                 <Zap className="h-4 w-4 mr-2" />
-                Quick Adjust
+                {t('pantry.quickAdjust')}
               </Button>
               <Button
                 variant="ghost"
@@ -165,7 +167,7 @@ export function DashboardPage() {
                 className={`flex-1 ${viewMode === 'manage' ? 'bg-white shadow-sm hover:bg-white text-gray-900' : 'hover:bg-gray-200 text-gray-600'}`}
               >
                 <Package className="h-4 w-4 mr-2" />
-                Manage
+                {t('pantry.manage')}
               </Button>
             </div>
 
@@ -173,7 +175,7 @@ export function DashboardPage() {
             <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Total Items</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">{t('pantry.totalItems')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{items.length}</div>
@@ -181,7 +183,7 @@ export function DashboardPage() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Expiring Soon</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">{t('pantry.expiringItems')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-orange-600">{expiringItems}</div>
@@ -189,7 +191,7 @@ export function DashboardPage() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Low Stock</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">{t('pantry.lowStockItems')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-amber-600">{lowStockItems}</div>

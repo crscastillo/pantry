@@ -1,4 +1,4 @@
-# Pantry - Smart Home Pantry Management
+# Pantry Fast - Smart Pantry Management
 
 A modern SaaS application for managing your home pantry with AI-powered features, built with React, TypeScript, Supabase, and shadcn/ui.
 

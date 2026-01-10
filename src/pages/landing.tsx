@@ -22,7 +22,7 @@ export function LandingPage() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center space-x-2">
             <ChefHat className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">Pantry</span>
+            <span className="font-bold text-xl">Pantry Fast</span>
           </div>
           <div className="flex items-center space-x-4">
             <Link to="/login">
@@ -261,7 +261,7 @@ export function LandingPage() {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-2">
               <ChefHat className="h-6 w-6 text-primary" />
-              <span className="font-bold text-xl">Pantry</span>
+              <span className="font-bold text-xl">Pantry Fast</span>
             </div>
             <p className="text-sm text-muted-foreground">
               © 2026 Pantry. All rights reserved.

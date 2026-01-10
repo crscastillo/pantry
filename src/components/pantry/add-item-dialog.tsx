@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,6 +49,7 @@ const units: PantryUnit[] = [
 ]
 
 export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialogProps) {
+  const { t } = useTranslation()
   const [formData, setFormData] = useState({
     name: '',
     category: 'Other' as PantryCategory,
@@ -111,8 +113,8 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
           notes: formData.notes || null,
         })
         toast({
-          title: "Item updated",
-          description: "Your pantry item has been updated successfully.",
+          title: t('pantry.itemUpdated'),
+          description: t('pantry.itemUpdatedDesc'),
         })
       } else {
         await addMutation.mutateAsync({
@@ -125,15 +127,15 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
           image_url: null,
         })
         toast({
-          title: "Item added",
-          description: "Your item has been added to the pantry.",
+          title: t('pantry.itemAdded'),
+          description: t('pantry.itemAddedDesc'),
         })
       }
       onOpenChange(false)
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save item",
+        title: t('pantry.error'),
+        description: error instanceof Error ? error.message : t('pantry.error'),
         variant: "destructive",
       })
     }
@@ -144,14 +146,14 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
     try {
       await deleteMutation.mutateAsync(editingItem.id)
       toast({
-        title: "Item deleted",
-        description: "The item has been removed from your pantry.",
+        title: t('pantry.itemDeleted'),
+        description: t('pantry.itemDeletedDesc'),
       })
       onOpenChange(false)
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete item",
+        title: t('pantry.error'),
+        description: t('pantry.deleteError'),
         variant: "destructive",
       })
     }
@@ -171,6 +173,26 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
       'Other': '📦'
     }
     return emojiMap[category] || '📦'
+  }
+
+  const getCategoryTranslationKey = (category: string) => {
+    const keyMap: Record<string, string> = {
+      'Fruits & Vegetables': 'pantry.categories.fruitsVegetables',
+      'Meat & Seafood': 'pantry.categories.meatSeafood',
+      'Dairy & Eggs': 'pantry.categories.dairyEggs',
+      'Bakery & Bread': 'pantry.categories.bakeryBread',
+      'Pantry Staples': 'pantry.categories.pantryStaples',
+      'Beverages': 'pantry.categories.beverages',
+      'Frozen': 'pantry.categories.frozen',
+      'Snacks': 'pantry.categories.snacks',
+      'Condiments': 'pantry.categories.condiments',
+      'Other': 'pantry.categories.other'
+    }
+    return keyMap[category] || 'pantry.categories.other'
+  }
+
+  const getUnitTranslationKey = (unit: string) => {
+    return `pantry.units.${unit}`
   }
 
   const handleImageCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -202,13 +224,13 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
       })
       
       toast({
-        title: "Product recognized!",
-        description: "Form has been auto-filled with product details.",
+        title: t('pantry.productRecognized'),
+        description: t('pantry.productRecognizedDesc'),
       })
     } catch (error) {
       toast({
-        title: "Analysis failed",
-        description: error instanceof Error ? error.message : "Could not analyze the image. Please fill in manually.",
+        title: t('pantry.analysisFailed'),
+        description: error instanceof Error ? error.message : t('pantry.analysisFailedDesc'),
         variant: "destructive",
       })
     } finally {
@@ -252,7 +274,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
                     ) : (
                       <Camera className="h-5 w-5" />
                     )}
-                    <span className="hidden sm:inline">AI Scan</span>
+                    <span className="hidden sm:inline">{t('pantry.aiScan')}</span>
                     <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs px-1.5 py-0">
                       AI
                     </Badge>
@@ -261,7 +283,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
               )}
               {editingItem && (
                 <>
-                  <Button variant="ghost" size="icon" onClick={() => toast({ title: "Coming soon!" })}>
+                  <Button variant="ghost" size="icon" onClick={() => toast({ title: t('pantry.comingSoon') })}>
                     <ShoppingBag className="h-5 w-5" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={handleDelete}>
@@ -274,154 +296,176 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
           {isAnalyzing && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-emerald-600 animate-pulse" />
-              <span className="text-sm text-emerald-800">Analyzing product with AI...</span>
+              <span className="text-sm text-emerald-800">{t('pantry.analyzingProduct')}</span>
             </div>
           )}
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Item Header */}
-          <div>
-            <div className="text-5xl mb-4">{getCategoryEmoji(formData.category)}</div>
-            <Input
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Item name"
-              className="text-2xl font-bold border-0 p-0 h-auto focus-visible:ring-0 break-words"
-              required
-            />
+          <div className="space-y-3">
+            <div className="text-5xl text-center mb-4">{getCategoryEmoji(formData.category)}</div>
+            <div className="space-y-2">
+              <Label htmlFor="item-name" className="text-sm font-medium">{t('pantry.itemName')}</Label>
+              <Input
+                id="item-name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder={t('pantry.itemNamePlaceholder')}
+                className="text-xl font-semibold h-12"
+                required
+                autoFocus
+              />
+            </div>
             <Badge variant="secondary" className="mt-2">
-              {formData.category} {formData.location && `in ${formData.location}`}
+              {t(getCategoryTranslationKey(formData.category))} {formData.location && `${t('pantry.in')} ${formData.location}`}
             </Badge>
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-xs text-gray-500 mb-1">In pantry</div>
-              <div className="font-semibold">
-                {editingItem ? `${Math.floor((new Date().getTime() - new Date(editingItem.created_at).getTime()) / (1000 * 60 * 60 * 24))} days` : 'New'}
+          <div className="grid grid-cols-3 gap-3 pt-2">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-600 font-medium mb-1">{t('pantry.inPantry')}</div>
+              <div className="font-semibold text-gray-900">
+                {editingItem ? `${Math.floor((new Date().getTime() - new Date(editingItem.created_at).getTime()) / (1000 * 60 * 60 * 24))} ${t('pantry.days')}` : t('pantry.new')}
               </div>
             </div>
-            <div className="bg-orange-50 rounded-lg p-4">
-              <div className="text-xs text-gray-500 mb-1">Expiring</div>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+              <div className="text-xs text-orange-700 font-medium mb-1">{t('pantry.expiring')}</div>
               <div className="font-semibold text-orange-600">
-                {formData.expiry_date ? `in ${Math.floor((new Date(formData.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days` : 'Not set'}
+                {formData.expiry_date ? `${t('pantry.in')} ${Math.floor((new Date(formData.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} ${t('pantry.days')}` : t('pantry.notSet')}
               </div>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-xs text-gray-500 mb-1">Amount</div>
-              <div className="font-semibold">{formData.quantity} {formData.unit}</div>
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+              <div className="text-xs text-emerald-700 font-medium mb-1">{t('pantry.amount')}</div>
+              <div className="font-semibold text-emerald-900">{formData.quantity} {t(getUnitTranslationKey(formData.unit))}</div>
             </div>
           </div>
 
           {/* Form Fields */}
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value as PantryCategory })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {getCategoryEmoji(cat)} {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  placeholder="Fridge, Freezer..."
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="quantity">Current Amount</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="expected_amount">Expected</Label>
-                <Input
-                  id="expected_amount"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={formData.expected_amount || ''}
-                  onChange={(e) => setFormData({ ...formData, expected_amount: e.target.value ? parseFloat(e.target.value) : null })}
-                  placeholder="Optional"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="unit">Unit</Label>
-                <Select
-                  value={formData.unit}
-                  onValueChange={(value) => setFormData({ ...formData, unit: value as PantryUnit })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {units.map((unit) => (
-                      <SelectItem key={unit} value={unit}>
-                        {unit}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          <div className="space-y-5">
+            {/* Category & Location */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('pantry.categoryAndLocation')}</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">{t('pantry.category')}</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value as PantryCategory })}
+                  >
+                    <SelectTrigger id="category">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {getCategoryEmoji(cat)} {t(getCategoryTranslationKey(cat))}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">{t('pantry.location')}</Label>
+                  <Input
+                    id="location"
+                    placeholder={t('pantry.locationPlaceholder')}
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="purchase_date">Purchase Date</Label>
-                <Input
-                  id="purchase_date"
-                  type="date"
-                  value={formData.purchase_date}
-                  onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="expiry_date">Expiry Date</Label>
-                <Input
-                  id="expiry_date"
-                  type="date"
-                  value={formData.expiry_date}
-                  onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                />
+            {/* Quantity & Unit */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('pantry.quantityAndUnit')}</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="quantity">{t('pantry.currentAmount')}</Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="expected_amount">{t('pantry.expected')}</Label>
+                  <Input
+                    id="expected_amount"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={formData.expected_amount || ''}
+                    onChange={(e) => setFormData({ ...formData, expected_amount: e.target.value ? parseFloat(e.target.value) : null })}
+                    placeholder={t('pantry.optional')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="unit">{t('pantry.unit')}</Label>
+                  <Select
+                    value={formData.unit}
+                    onValueChange={(value) => setFormData({ ...formData, unit: value as PantryUnit })}
+                  >
+                    <SelectTrigger id="unit">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {units.map((unit) => (
+                        <SelectItem key={unit} value={unit}>
+                          {t(getUnitTranslationKey(unit))}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                placeholder="Any additional information..."
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                rows={3}
-              />
+            {/* Dates */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('pantry.dates')}</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="purchase_date">{t('pantry.purchaseDate')}</Label>
+                  <Input
+                    id="purchase_date"
+                    type="date"
+                    value={formData.purchase_date}
+                    onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="expiry_date">{t('pantry.expiryDate')}</Label>
+                  <Input
+                    id="expiry_date"
+                    type="date"
+                    value={formData.expiry_date}
+                    onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Information */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('pantry.additionalInfo')}</h3>
+              <div className="space-y-2">
+                <Label htmlFor="notes">{t('pantry.notes')}</Label>
+                <Textarea
+                  id="notes"
+                  placeholder={t('pantry.notesPlaceholder')}
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
             </div>
           </div>
 
@@ -433,7 +477,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
               size="lg"
               disabled={addMutation.isPending || updateMutation.isPending}
             >
-              {editingItem ? 'Update Item' : 'Add Item'}
+              {editingItem ? t('pantry.updateItem') : t('pantry.addItem')}
             </Button>
           </div>
         </form>

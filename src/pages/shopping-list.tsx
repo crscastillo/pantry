@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { PantryQuickAdjustCard } from '@/components/pantry/pantry-quick-adjust-card'
 import { AddItemDialog } from '@/components/pantry/add-item-dialog'
@@ -10,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function ShoppingListPage() {
+  const { t } = useTranslation()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -64,7 +66,7 @@ export function ShoppingListPage() {
             {/* Title and Search */}
             <div className="flex items-center gap-3 mb-4">
               <ShoppingCart className="h-8 w-8 text-emerald-500" />
-              <h1 className="text-2xl md:text-3xl font-bold">Shopping List</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">{t('shopping.title')}</h1>
             </div>
 
             {/* Search */}
@@ -72,7 +74,7 @@ export function ShoppingListPage() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search items..."
+                  placeholder={t('pantry.searchItems')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-gray-50 border-0"
@@ -83,7 +85,7 @@ export function ShoppingListPage() {
                 className="hidden md:flex bg-emerald-500 hover:bg-emerald-600"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Item
+                {t('pantry.addItem')}
               </Button>
             </div>
 
@@ -92,7 +94,7 @@ export function ShoppingListPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs md:text-sm font-medium text-gray-600">
-                    Items to Buy
+                    {t('shopping.itemsToBuy')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -102,7 +104,7 @@ export function ShoppingListPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs md:text-sm font-medium text-gray-600">
-                    Out of Stock
+                    {t('shopping.outOfStock')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -112,7 +114,7 @@ export function ShoppingListPage() {
               <Card className="hidden md:block">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs md:text-sm font-medium text-gray-600">
-                    Est. Value
+                    {t('shopping.estimatedCost')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -130,18 +132,18 @@ export function ShoppingListPage() {
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 pb-24 md:pb-6">
             {isLoading ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">Loading shopping list...</p>
+                <p className="text-muted-foreground">{t('common.loading')}</p>
               </div>
             ) : totalItems === 0 ? (
               <div className="text-center py-12 bg-white rounded-xl">
                 <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">
-                  {searchQuery ? 'No items found' : 'Your shopping list is empty'}
+                  {searchQuery ? t('shopping.noItemsFound') : t('shopping.noItemsFound')}
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   {searchQuery 
-                    ? 'Try a different search term' 
-                    : 'All your items are well stocked! 🎉'}
+                    ? t('pantry.noItemsDesc')
+                    : t('shopping.noItemsDesc')}
                 </p>
               </div>
             ) : (
@@ -152,7 +154,7 @@ export function ShoppingListPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <div className="h-8 w-1 bg-red-500 rounded"></div>
                       <h2 className="text-lg font-semibold text-gray-900">
-                        Out of Stock ({outOfStock.length})
+                        {t('shopping.outOfStock')} ({outOfStock.length})
                       </h2>
                     </div>
                     <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4 md:space-y-0">
@@ -173,7 +175,7 @@ export function ShoppingListPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <div className="h-8 w-1 bg-orange-500 rounded"></div>
                       <h2 className="text-lg font-semibold text-gray-900">
-                        Critically Low ({criticallyLow.length})
+                        {t('shopping.criticallyLow')} ({criticallyLow.length})
                       </h2>
                     </div>
                     <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4 md:space-y-0">
@@ -194,7 +196,7 @@ export function ShoppingListPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <div className="h-8 w-1 bg-amber-500 rounded"></div>
                       <h2 className="text-lg font-semibold text-gray-900">
-                        Needs Restocking ({needsRestocking.length})
+                        {t('shopping.needsRestocking')} ({needsRestocking.length})
                       </h2>
                     </div>
                     <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4 md:space-y-0">

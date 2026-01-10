@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { differenceInDays } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PantryItem } from '@/types'
@@ -36,6 +37,7 @@ const getCategoryEmoji = (category: string) => {
 }
 
 export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardProps) {
+  const { t } = useTranslation()
   const { toast } = useToast()
   const adjustMutation = useQuickAdjustQuantity()
   const [isAdjusting, setIsAdjusting] = useState(false)
@@ -130,7 +132,7 @@ export function PantryQuickAdjustCard({ item, onEdit }: PantryQuickAdjustCardPro
               <div className="mb-3">
                 {item.quantity < item.expected_amount ? (
                   <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
-                    Low Stock ({item.quantity}/{item.expected_amount})
+                    {t('pantry.lowStock')} ({item.quantity}/{item.expected_amount})
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">

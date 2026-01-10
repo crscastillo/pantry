@@ -61,7 +61,7 @@ export function LoginPage() {
           <div className="flex justify-center mb-4">
             <ChefHat className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome to Pantry</CardTitle>
+          <CardTitle className="text-2xl font-bold">Welcome to Pantry Fast</CardTitle>
           <CardDescription>
             Sign in to manage your home pantry with AI
           </CardDescription>

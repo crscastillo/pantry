@@ -1,5 +1,6 @@
 import { Package, ShoppingCart, UtensilsCrossed, LogOut, Settings } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/button'
 
@@ -8,15 +9,16 @@ interface NavigationProps {
 }
 
 export function Navigation({ onAddClick }: NavigationProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const { signOut, user } = useAuthStore()
 
   const navItems = [
-    { path: '/app/dashboard', label: 'Pantry', icon: Package },
-    { path: '/app/shopping', label: 'Shopping', icon: ShoppingCart },
-    { path: '/app/recipes', label: 'Recipes', icon: UtensilsCrossed },
-    { path: '/app/settings', label: 'Settings', icon: Settings },
+    { path: '/app/dashboard', label: t('navigation.pantry'), icon: Package },
+    { path: '/app/shopping', label: t('navigation.shopping'), icon: ShoppingCart },
+    { path: '/app/recipes', label: t('navigation.recipes'), icon: UtensilsCrossed },
+    { path: '/app/settings', label: t('navigation.settings'), icon: Settings },
   ]
 
   return (
@@ -27,7 +29,7 @@ export function Navigation({ onAddClick }: NavigationProps) {
           {/* Logo */}
           <div className="flex items-center gap-2 px-6 py-5 border-b">
             <Package className="h-8 w-8 text-emerald-500" />
-            <h1 className="text-2xl font-bold">Pantry</h1>
+            <h1 className="text-2xl font-bold">Pantry Fast</h1>
           </div>
 
           {/* Add Item Button */}
@@ -38,7 +40,7 @@ export function Navigation({ onAddClick }: NavigationProps) {
               size="lg"
             >
               <Package className="h-5 w-5 mr-2" />
-              Add Item
+              {t('pantry.addItem')}
             </Button>
           </div>
 
