@@ -8,7 +8,7 @@ interface AuthState {
   initialized: boolean
   signIn: (email: string, password: string) => Promise<void>
   signInWithProvider: (provider: 'google' | 'facebook') => Promise<void>
-  signUp: (email: string, password: string, fullName?: string) => Promise<void>
+  signUp: (email: string, password: string, fullName?: string, emailRedirectTo?: string) => Promise<void>
   signOut: () => Promise<void>
   checkAuth: () => Promise<void>
   initialize: () => void
@@ -108,7 +108,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  signUp: async (email: string, password: string, fullName?: string) => {
+  signUp: async (email: string, password: string, fullName?: string, emailRedirectTo?: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -116,6 +116,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         data: {
           full_name: fullName,
         },
+        emailRedirectTo: emailRedirectTo,
       },
     })
     

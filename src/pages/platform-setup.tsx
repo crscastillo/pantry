@@ -68,6 +68,8 @@ export function PlatformSetupPage() {
 
     try {
       // Create the platform owner account
+      const platformUrl = import.meta.env.VITE_PLATFORM_URL
+      const redirectUrl = `${window.location.protocol}//${platformUrl}/login`
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: rootUserEmail,
         password: password,
@@ -76,6 +78,7 @@ export function PlatformSetupPage() {
             full_name: fullName,
             is_platform_owner: true,
           },
+          emailRedirectTo: redirectUrl,
         },
       })
 
@@ -83,7 +86,7 @@ export function PlatformSetupPage() {
 
       if (authData.user) {
         // Update the profile to mark as platform owner
-        const { error: profileError } = await supabase
+        const { error: profileError } = await (supabase as any)
           .from('profiles')
           .update({ 
             full_name: fullName,
