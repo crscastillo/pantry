@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -221,8 +221,8 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1rem)] max-w-2xl h-[100vh] sm:h-[90vh] overflow-y-auto p-0 gap-0">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="w-full h-[90vh] p-0 overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b p-3 sm:p-4 z-10">
           <div className="flex items-center justify-between mb-4">
@@ -434,7 +434,7 @@ export function AddItemDialog({ open, onOpenChange, editingItem }: AddItemDialog
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }
