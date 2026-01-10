@@ -12,6 +12,7 @@ import { useAuthStore } from '@/store/auth'
 import { Settings as SettingsIcon, Check, Zap, Sparkles, Crown, Camera, Languages } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { getSubscriptionTiers, createCheckoutSession } from '@/lib/subscription'
+import { updateUserLanguage } from '@/lib/user-settings'
 import type { SubscriptionTier } from '@/types/subscription'
 
 export function SettingsPage() {
@@ -73,13 +74,35 @@ export function SettingsPage() {
     }
   }
 
-  const handleLanguageChange = (language: string) => {
+  const handleLanguageChange = async (language: string) => {
+    if (!user?.id) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to change language',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Update language in i18n and localStorage immediately for instant feedback
     i18n.changeLanguage(language)
     localStorage.setItem('language', language)
-    toast({
-      title: t('settings.languageUpdated'),
-      description: `Language changed to ${language.toUpperCase()}`,
-    })
+    
+    // Save to database
+    const result = await updateUserLanguage(user.id, language as 'en' | 'es' | 'fr')
+    
+    if (result.success) {
+      toast({
+        title: t('settings.languageUpdated'),
+        description: `Language changed to ${language.toUpperCase()}`,
+      })
+    } else {
+      toast({
+        title: 'Error',
+        description: result.error || 'Failed to save language preference',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
