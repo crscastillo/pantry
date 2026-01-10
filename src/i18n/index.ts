@@ -10,14 +10,16 @@ const resources = {
   fr: { translation: fr },
 }
 
-// Get saved language from localStorage or default to 'en'
-const savedLanguage = localStorage.getItem('language') || 'en'
+// Get saved language from localStorage or detect from browser
+const savedLanguage = localStorage.getItem('language')
+const browserLanguage = navigator.language.split('-')[0] // Get 'en' from 'en-US'
+const defaultLanguage = savedLanguage || (browserLanguage in resources ? browserLanguage : 'en')
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: savedLanguage,
+    lng: defaultLanguage,
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false, // React already escapes values
