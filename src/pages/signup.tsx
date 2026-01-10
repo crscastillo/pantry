@@ -10,6 +10,7 @@ import { ChefHat } from 'lucide-react'
 
 export function SignupPage() {
   const [email, setEmail] = useState('')
+  const [confirmEmail, setConfirmEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -20,6 +21,17 @@ export function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+
+    // Validate emails match
+    if (email !== confirmEmail) {
+      toast({
+        title: "Error",
+        description: "Email addresses do not match",
+        variant: "destructive",
+      })
+      setLoading(false)
+      return
+    }
 
     try {
       const redirectUrl = `${window.location.origin}/login`
@@ -72,6 +84,17 @@ export function SignupPage() {
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmEmail">Confirm Email</Label>
+              <Input
+                id="confirmEmail"
+                type="email"
+                placeholder="name@example.com"
+                value={confirmEmail}
+                onChange={(e) => setConfirmEmail(e.target.value)}
                 required
               />
             </div>
