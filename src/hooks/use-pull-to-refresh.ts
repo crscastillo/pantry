@@ -1,16 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * Detects if the app is running inside a WebKit container (iOS/Android WebView)
+ * Detects if the app is running inside a WebKit container or iOS Safari in standalone mode
  */
 function isWebKitContainer(): boolean {
   const userAgent = navigator.userAgent.toLowerCase()
   
+  // Check if running as iOS/iPadOS web app added to home screen (standalone mode)
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                       (window.navigator as any).standalone === true
+  
+  // Check for iOS/iPadOS
+  const isIOS = userAgent.includes('iphone') || userAgent.includes('ipad')
+  
   // Check for common WebView indicators
   const isWebView = 
-    // iOS WebView indicators
-    (userAgent.includes('iphone') || userAgent.includes('ipad')) && 
-    !userAgent.includes('safari') ||
+    // iOS WebView indicators (not Safari)
+    isIOS && !userAgent.includes('safari') ||
     // Android WebView indicators
     userAgent.includes('wv') ||
     userAgent.includes('android') && userAgent.includes('version') && !userAgent.includes('chrome') ||
@@ -18,7 +24,8 @@ function isWebKitContainer(): boolean {
     (window as any).Capacitor !== undefined ||
     (window as any).cordova !== undefined
 
-  return isWebView
+  // Enable for iOS standalone mode OR webview
+  return (isIOS && isStandalone) || isWebView
 }
 
 interface UsePullToRefreshOptions {
