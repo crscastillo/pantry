@@ -55,12 +55,22 @@ export class PlatformService {
             console.error('Error checking email confirmation:', error)
           }
           
+          // Get last sign in timestamp
+          let lastSignIn = null
+          try {
+            const { data: signInData } = await (supabase as any)
+              .rpc('get_user_last_sign_in', { user_id: profile.id })
+            lastSignIn = signInData
+          } catch (error) {
+            console.error('Error getting last sign in:', error)
+          }
+          
           return {
             id: profile.id,
             email: profile.email || 'N/A',
             full_name: profile.full_name,
             pantry_items_count: count || 0,
-            last_sign_in_at: null, // Would need service role key to access auth.users
+            last_sign_in_at: lastSignIn,
             email_confirmed: emailConfirmed
           }
         })
