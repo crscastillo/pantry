@@ -122,7 +122,7 @@ export class PlatformService {
         .eq('user_id', userId)
 
       if (recipesError) {
-        console.error('Error deleting recipes:', recipesError)
+        throw new Error(`Failed to delete recipes: ${recipesError.message}`)
       }
 
       // Delete pantry items
@@ -135,7 +135,7 @@ export class PlatformService {
         throw new Error(`Failed to delete pantry items: ${pantryError.message}`)
       }
 
-      // Delete profile
+      // Delete profile (must be last since RLS checks depend on it)
       const { error: profileError } = await supabase
         .from('profiles')
         .delete()
