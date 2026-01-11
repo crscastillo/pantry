@@ -13,6 +13,7 @@ interface UserData {
   full_name: string | null
   pantry_items_count: number
   last_sign_in_at: string | null
+  email_confirmed: boolean
 }
 
 interface PlatformMetrics {
@@ -132,14 +133,21 @@ export function PlatformDashboardPage() {
             .select('*', { count: 'exact', head: true })
             .eq('user_id', profile.id)
           
-          // Get last sign in from auth.users (requires service role)
-          // For now we'll use null, can be enhanced with proper auth access
+          // Get email confirmation status
+          const { data: confirmData, error: confirmError } = await (supabase as any)
+            .rpc('get_user_email_confirmed', { user_id: profile.id })
+          
+          if (confirmError) {
+            console.error('Error checking email confirmation:', confirmError)
+          }
+          
           return {
             id: profile.id,
             email: profile.email || 'N/A',
             full_name: profile.full_name,
             pantry_items_count: count || 0,
-            last_sign_in_at: null // Would need service role key to access auth.users
+            last_sign_in_at: null, // Would need service role key to access auth.users
+            email_confirmed: confirmData ?? false
           }
         })
       )
@@ -376,6 +384,7 @@ export function PlatformDashboardPage() {
                       <tr className="border-b">
                         <th className="text-left p-3 font-semibold">Name</th>
                         <th className="text-left p-3 font-semibold">Email</th>
+                        <th className="text-center p-3 font-semibold">Email Status</th>
                         <th className="text-right p-3 font-semibold">Pantry Items</th>
                         <th className="text-right p-3 font-semibold">Last Login</th>
                       </tr>
@@ -385,6 +394,17 @@ export function PlatformDashboardPage() {
                         <tr key={userData.id} className="border-b hover:bg-gray-50">
                           <td className="p-3">{userData.full_name || 'N/A'}</td>
                           <td className="p-3">{userData.email}</td>
+                          <td className="p-3 text-center">
+                            {userData.email_confirmed ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                ✓ Confirmed
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                ⚠ Pending
+                              </span>
+                            )}
+                          </td>
                           <td className="p-3 text-right">{userData.pantry_items_count}</td>
                           <td className="p-3 text-right text-sm text-muted-foreground">
                             {userData.last_sign_in_at 
