@@ -45,7 +45,10 @@ const checkInactivity = () => {
     
     if (timeSinceActivity > oneDayInMs) {
       console.log('⏰ Session expired due to inactivity (>24h)')
-      supabase.auth.signOut()
+      supabase.auth.signOut({ scope: 'global' }).then(() => {
+        localStorage.clear()
+        sessionStorage.clear()
+      })
     }
   }
 }

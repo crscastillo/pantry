@@ -91,10 +91,15 @@ export class AuthService {
    * Sign out current user
    */
   async signOut(): Promise<{ error: AuthError | null }> {
-    const { error } = await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut({ scope: 'global' })
 
     if (error) {
       console.error('[AuthService] Sign out error:', error)
+    } else {
+      // Clear local storage
+      localStorage.removeItem('supabase.auth.token')
+      localStorage.removeItem('language')
+      sessionStorage.clear()
     }
 
     return { error }

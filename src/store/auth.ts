@@ -129,8 +129,36 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
   
   signOut: async () => {
-    await supabase.auth.signOut()
-    set({ user: null })
+    try {
+      console.log('🚪 Signing out...')
+      
+      // Clear all tokens and session data from Supabase
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
+      
+      if (error) {
+        console.error('❌ Sign out error:', error)
+        throw error
+      }
+      
+      // Clear user state
+      set({ user: null, loading: false })
+      
+      // Clear any cached data from localStorage
+      localStorage.removeItem('supabase.auth.token')
+      localStorage.removeItem('language')
+      
+      // Clear session storage as well
+      sessionStorage.clear()
+      
+      console.log('✅ Successfully signed out and cleared all tokens')
+    } catch (error) {
+      console.error('❌ SignOut exception:', error)
+      // Even if there's an error, clear local state
+      set({ user: null, loading: false })
+      localStorage.clear()
+      sessionStorage.clear()
+      throw error
+    }
   },
   
   checkAuth: async () => {

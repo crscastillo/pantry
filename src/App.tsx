@@ -11,7 +11,6 @@ import { DashboardPage } from '@/pages/dashboard'
 import { ShoppingListPage } from '@/pages/shopping-list'
 import { SettingsPage } from '@/pages/settings'
 import RecipesPage from '@/pages/recipes'
-import { PlatformLoginPage } from '@/pages/platform-login'
 import { PlatformDashboardPage } from '@/pages/platform-dashboard'
 import { PlatformSetupPage } from '@/pages/platform-setup'
 import { Toaster } from '@/components/ui/toaster'
@@ -52,6 +51,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />
   }
 
+  // Check if user is platform owner - they should not access /app routes
+  const isRootUser = user?.is_platform_owner === true
+
+  if (isRootUser) {
+    return <Navigate to="/platform" replace />
+  }
+
   return <>{children}</>
 }
 
@@ -69,11 +75,10 @@ function PlatformProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   // Check if user is platform owner
-  const rootUserEmail = import.meta.env.VITE_ROOT_USER_EMAIL
-  const isRootUser = user?.email === rootUserEmail && (user as any)?.is_platform_owner === true
+  const isRootUser = user?.is_platform_owner === true
 
   if (!isRootUser) {
-    return <Navigate to="/platform/login" replace />
+    return <Navigate to="/login" replace />
   }
 
   return <>{children}</>
@@ -165,7 +170,6 @@ function AppOnlyRoutes() {
       
       {/* Platform Routes */}
       <Route path="/platform/setup" element={<PlatformSetupPage />} />
-      <Route path="/platform/login" element={<PlatformLoginPage />} />
       <Route
         path="/platform/dashboard"
         element={

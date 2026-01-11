@@ -34,7 +34,7 @@ export function PlatformSetupPage() {
 
       if (data) {
         // Setup already complete, redirect to login
-        navigate('/platform/login')
+        navigate('/login')
       }
     } catch (error) {
       // User doesn't exist, continue with setup
@@ -68,7 +68,6 @@ export function PlatformSetupPage() {
 
     try {
       // Create the platform owner account
-      const redirectUrl = `${window.location.origin}/platform/login`
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: rootUserEmail,
         password: password,
@@ -77,7 +76,7 @@ export function PlatformSetupPage() {
             full_name: fullName,
             is_platform_owner: true,
           },
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: `${window.location.origin}/login`,
         },
       })
 
@@ -96,16 +95,36 @@ export function PlatformSetupPage() {
         if (profileError) {
           console.error('Profile update error:', profileError)
         }
+
+        // Check if email confirmation is required
+        const needsConfirmation = authData.user.identities?.length === 0 || 
+                                  !authData.user.email_confirmed_at
+
+        if (needsConfirmation) {
+          toast({
+            title: "Check Your Email",
+            description: `A confirmation email has been sent to ${rootUserEmail}. Please verify your email before signing in.`,
+            duration: 10000,
+          })
+        } else {
+          toast({
+            title: "Setup Complete!",
+            description: "Platform owner account created successfully. You can now sign in.",
+          })
+        }
+      } else {
+        toast({
+          title: "Setup Complete!",
+          description: "Platform owner account created successfully. Please check your email to verify before signing in.",
+          duration: 10000,
+        })
       }
 
-      toast({
-        title: "Setup Complete!",
-        description: "Platform owner account created successfully. You can now sign in.",
-      })
-
       // Sign out and redirect to login
-      await supabase.auth.signOut()
-      setTimeout(() => navigate('/platform/login'), 2000)
+      await supabase.auth.signOut({ scope: 'global' })
+      localStorage.clear()
+      sessionStorage.clear()
+      setTimeout(() => navigate('/login'), 3000)
     } catch (error) {
       toast({
         title: "Error",
