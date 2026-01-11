@@ -8,13 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { ChefHat, Shield } from 'lucide-react'
+import { ChefHat, Shield, Loader2 } from 'lucide-react'
 
 export function LoginPage() {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(false)
   const [platformOwnerReady, setPlatformOwnerReady] = useState<boolean | null>(null)
   const { signIn } = useAuthStore()
   const navigate = useNavigate()
@@ -29,17 +30,18 @@ export function LoginPage() {
    */
   const checkPlatformOwnerReady = async (): Promise<boolean> => {
     try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, is_platform_owner, email')
-        .eq('email', rootUserEmail)
-        .eq('is_platform_owner', true)
-        .limit(1)
-        .single()
-
-      // If profile exists, the auth user exists and is confirmed
-      return !!data
+      // Use RPC function to check if platform owner is fully ready
+      const { data, error } = await (supabase as any)
+        .rpc('check_platform_owner_ready', { owner_email: rootUserEmail })
+      
+      if (error) {
+        console.error('Error checking platform owner ready:', error)
+        return false
+      }
+      
+      return data === true
     } catch (error) {
+      console.error('Exception checking platform owner ready:', error)
       return false
     }
   }
@@ -52,10 +54,10 @@ export function LoginPage() {
     
     if (newEmail === rootUserEmail) {
       // Check if platform owner is ready
-      setLoading(true)
+      setChecking(true)
       const isReady = await checkPlatformOwnerReady()
       setPlatformOwnerReady(isReady)
-      setLoading(false)
+      setChecking(false)
     } else {
       setPlatformOwnerReady(null)
     }
@@ -206,8 +208,16 @@ export function LoginPage() {
               />
             </div>
             
+            {/* Show checking spinner for platform owner */}
+            {isPlatformOwnerEmail && checking && (
+              <div className="flex items-center justify-center p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <Loader2 className="h-4 w-4 animate-spin text-purple-600 mr-2" />
+                <p className="text-sm text-purple-900">Checking platform owner status...</p>
+              </div>
+            )}
+            
             {/* Show password field only for regular users or platform owner that is ready */}
-            {(!isPlatformOwnerEmail || platformOwnerReady === true) && (
+            {!checking && (!isPlatformOwnerEmail || platformOwnerReady === true) && (
               <div className="space-y-2">
                 <Label htmlFor="password">{t('auth.password')}</Label>
                 <Input
@@ -222,7 +232,7 @@ export function LoginPage() {
             )}
             
             {/* Show info message when platform owner needs setup */}
-            {isPlatformOwnerEmail && platformOwnerReady === false && (
+            {!checking && isPlatformOwnerEmail && platformOwnerReady === false && (
               <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
                 <p className="text-sm text-purple-900">
                   <strong>Setup Required:</strong> Platform owner account needs to be created.
