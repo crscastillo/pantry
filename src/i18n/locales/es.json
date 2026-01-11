@@ -79,6 +79,11 @@
 
     "searchItems": "Buscar artículos...",
     "quickAdjust": "Ajuste Rápido",
+    "emptyPantry": "Tu despensa está vacía",
+    "startAdding": "Comienza agregando tu primer artículo",
+    "noItemsFound": "No se encontraron artículos",
+    "tryDifferentSearch": "Intenta con un término de búsqueda diferente",
+    "loadingPantry": "Cargando tu despensa...",
     "manage": "Administrar",
     "all": "Todos",
     "fridge": "Refrigerador",

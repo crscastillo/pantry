@@ -220,16 +220,16 @@ export function DashboardPage() {
 
             {isLoading ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">Loading your pantry...</p>
+                <p className="text-muted-foreground">{t('pantry.loadingPantry')}</p>
               </div>
             ) : filteredItems.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-xl">
                 <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">
-                  {searchQuery ? 'No items found' : 'Your pantry is empty'}
+                  {searchQuery ? t('pantry.noItemsFound') : t('pantry.emptyPantry')}
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
-                  {searchQuery ? 'Try a different search term' : 'Start by adding your first item'}
+                  {searchQuery ? t('pantry.tryDifferentSearch') : t('pantry.startAdding')}
                 </p>
               </div>
             ) : (
