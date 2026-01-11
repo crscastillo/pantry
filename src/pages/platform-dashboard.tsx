@@ -3,9 +3,20 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Shield, Users, Database, Settings, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
+import { Shield, Users, Database, Settings, LogOut, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
+import { PlatformService } from '@/services/platform.service'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface UserData {
   id: string
@@ -41,6 +52,8 @@ export function PlatformDashboardPage() {
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [loadingMetrics, setLoadingMetrics] = useState(true)
   const [showUserList, setShowUserList] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<UserData | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     // Check if user is root user and platform owner
@@ -117,42 +130,8 @@ export function PlatformDashboardPage() {
   const loadUserList = async () => {
     setLoadingUsers(true)
     try {
-      // Get all users with their pantry item counts
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, email, full_name')
-        .order('created_at', { ascending: false })
-      
-      if (profilesError) throw profilesError
-
-      // Get pantry item counts for each user
-      const usersWithCounts = await Promise.all(
-        (profiles || []).map(async (profile: any) => {
-          const { count } = await supabase
-            .from('pantry_items')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', profile.id)
-          
-          // Get email confirmation status
-          const { data: confirmData, error: confirmError } = await (supabase as any)
-            .rpc('get_user_email_confirmed', { user_id: profile.id })
-          
-          if (confirmError) {
-            console.error('Error checking email confirmation:', confirmError)
-          }
-          
-          return {
-            id: profile.id,
-            email: profile.email || 'N/A',
-            full_name: profile.full_name,
-            pantry_items_count: count || 0,
-            last_sign_in_at: null, // Would need service role key to access auth.users
-            email_confirmed: confirmData ?? false
-          }
-        })
-      )
-
-      setUsers(usersWithCounts)
+      const users = await PlatformService.getUserList()
+      setUsers(users)
     } catch (error) {
       console.error('Error loading users:', error)
       toast({
@@ -170,6 +149,41 @@ export function PlatformDashboardPage() {
       loadUserList()
     }
     setShowUserList(!showUserList)
+  }
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return
+
+    setDeleting(true)
+    try {
+      const result = await PlatformService.deleteUser(userToDelete.id)
+      
+      if (result.success) {
+        toast({
+          title: "User Deleted",
+          description: `Successfully deleted user and ${result.deletedPantryItems} pantry items, ${result.deletedRecipes} recipes.`,
+        })
+        
+        // Refresh user list and metrics
+        await loadUserList()
+        await loadMetrics()
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to delete user",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(false)
+      setUserToDelete(null)
+    }
   }
 
   const handleSignOut = async () => {
@@ -387,6 +401,7 @@ export function PlatformDashboardPage() {
                         <th className="text-center p-3 font-semibold">Email Status</th>
                         <th className="text-right p-3 font-semibold">Pantry Items</th>
                         <th className="text-right p-3 font-semibold">Last Login</th>
+                        <th className="text-center p-3 font-semibold">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -410,6 +425,17 @@ export function PlatformDashboardPage() {
                             {userData.last_sign_in_at 
                               ? new Date(userData.last_sign_in_at).toLocaleDateString() 
                               : 'N/A'}
+                          </td>
+                          <td className="p-3 text-center">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setUserToDelete(userData)}
+                              disabled={userData.id === user?.id}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -449,6 +475,36 @@ export function PlatformDashboardPage() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Delete User Confirmation Dialog */}
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the user <strong>{userToDelete?.email}</strong> and all their data:
+              <ul className="mt-2 ml-4 list-disc space-y-1">
+                <li>{userToDelete?.pantry_items_count || 0} pantry items</li>
+                <li>All recipes and recipe ingredients</li>
+                <li>User profile</li>
+              </ul>
+              <p className="mt-2 text-red-600 font-semibold">
+                This action cannot be undone.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? 'Deleting...' : 'Delete User'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
